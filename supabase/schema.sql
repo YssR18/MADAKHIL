@@ -122,3 +122,27 @@ create policy batches_update on public.batches for update to authenticated
   with check ((select public.app_role()) = 'manager');
 create policy batches_delete on public.batches for delete to authenticated
   using ((select public.app_role()) = 'manager');
+
+-- ===== المراقب بلا كلمة سر + مدير واحد فقط =====
+-- زائر بلا حساب يقرأ فقط (لا كتابة). يعني أن أي شخص لديه الرابط يرى المداخيل.
+grant select on public.entries, public.batches to anon;
+create policy entries_select_anon on public.entries for select to anon using (true);
+create policy batches_select_anon on public.batches for select to anon using (true);
+
+-- بعد إنشاء المدير الأول يُغلق التسجيل
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  perform pg_advisory_xact_lock(871001);
+  if exists (select 1 from public.profiles where role = 'manager') then
+    raise exception 'التسجيل مغلق: يوجد مدير بالفعل';
+  end if;
+  insert into public.profiles (id, email, role) values (new.id, new.email, 'manager');
+  return new;
+end
+$$;
+revoke all on function public.handle_new_user() from public, anon, authenticated;

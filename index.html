@@ -166,18 +166,13 @@
                     <span id="storageText">جارٍ التحميل...</span>
                 </span>
                 <span id="roleBadge" class="hidden sm:inline-flex items-center text-xs font-bold px-3 py-2.5 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">وضع المراقب</span>
-                <button id="usersBtn" onclick="openUsersModal()" title="إدارة المستخدمين" class="mgr-only relative p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700 transition flex items-center gap-2 font-bold text-xs">
-                    <i class="fa-solid fa-users text-lg"></i>
-                    <span class="hidden md:inline">المستخدمون</span>
-                    <span id="usersBadge" style="display:none" class="absolute -top-1 -left-1 min-w-[1.1rem] h-[1.1rem] rounded-full bg-red-500 text-white text-[10px] font-black items-center justify-center px-1">0</span>
-                </button>
-                <button id="changePwBtn" onclick="openPwModal()" title="تغيير كلمة السر" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700 transition flex items-center gap-2 font-bold text-xs">
+                <button id="changePwBtn" onclick="openPwModal()" title="تغيير كلمة السر" class="mgr-only p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700 transition flex items-center gap-2 font-bold text-xs">
                     <i class="fa-solid fa-user-lock text-lg"></i>
                     <span class="hidden md:inline">كلمة السر</span>
                 </button>
-                <button id="authBtn" onclick="doLogout()" title="تسجيل الخروج" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-slate-700 transition flex items-center gap-2 font-bold text-xs">
+                <button id="authBtn" onclick="onAuthButton()" title="دخول المدير" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-slate-700 transition flex items-center gap-2 font-bold text-xs">
                     <i class="fa-solid fa-right-from-bracket text-lg"></i>
-                    <span id="authBtnText" class="hidden sm:inline">خروج</span>
+                    <span id="authBtnText" class="hidden sm:inline">دخول المدير</span>
                 </button>
                 <!-- Export Reports PDF Button -->
                 <button onclick="openReportModal()" title="طباعة التقرير (يُحفظ كملف PDF)" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700 transition flex items-center gap-2 font-bold text-xs">
@@ -916,7 +911,6 @@
                 };
                 savedSnap = snapshotNow();
                 renderAll();
-                if (role === 'manager') refreshPendingBadge();
             } catch (e) {
                 showToast('تعذّر تحميل البيانات. تحقق من الاتصال بالإنترنت.', 'error');
             }
@@ -926,7 +920,7 @@
             saveQueue = saveQueue.then(syncToDb).catch(() => {}).then(() => { pendingSyncs--; });
         }
         async function syncToDb() {
-            if (!sb || !authed) return;
+            if (!sb || !authed || role !== 'manager') return;
             const want = toRows();
             let failed = false;
             for (const key of ['entries', 'batches']) {
@@ -960,19 +954,14 @@
         }
         function stopPolling() { clearInterval(pollTimer); pollTimer = null; }
         async function pollTick() {
-            if (document.hidden || !authed || pendingSyncs > 0 || !session) return;
-            try {
-                const { data } = await sb.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
-                const r = data ? data.role : 'pending';
-                if (r !== role) { authed = false; stopPolling(); busyUser = null; await onSession(session); return; }
-            } catch (e) { return; }
+            if (document.hidden || !authed || pendingSyncs > 0) return;
             await loadData();
         }
         document.addEventListener('visibilitychange', () => { if (!document.hidden && authed && pendingSyncs === 0) pollTick(); });
         function setStorageBadge() {
             const t = document.getElementById('storageText'), d = document.getElementById('storageDot');
             if (!t || !d) return;
-            t.textContent = authed && session ? emailToUser(session.user.email) : '...';
+            t.textContent = !authed ? '...' : (session ? emailToUser(session.user.email) : 'عرض فقط');
             d.className = 'w-2.5 h-2.5 rounded-full ' + (authed ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600');
         }
         function refreshBatches() {
@@ -1698,7 +1687,14 @@
             badge.className = isMgr
                 ? 'hidden sm:inline-flex items-center text-xs font-bold px-3 py-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
                 : 'hidden sm:inline-flex items-center text-xs font-bold px-3 py-2.5 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800';
+            const ab = document.getElementById('authBtnText');
+            if (ab) ab.textContent = isMgr ? 'خروج' : 'دخول المدير';
+            const abb = document.getElementById('authBtn');
+            if (abb) abb.title = isMgr ? 'تسجيل الخروج' : 'دخول المدير';
             setStorageBadge();
+        }
+        function onAuthButton() {
+            if (session && role === 'manager') doLogout(); else showAuth('login');
         }
 
         // ----- sign-in screen
@@ -1732,6 +1728,7 @@
             if (m.includes('invalid login')) return 'اسم المستخدم أو كلمة السر غير صحيحة.';
             if (m.includes('email not confirmed')) return 'الحساب غير مفعّل بعد. اطلب من المدير تفعيله.';
             if (m.includes('already registered') || m.includes('already been registered')) return 'اسم المستخدم مستخدم مسبقًا. اختر اسمًا آخر أو سجّل الدخول.';
+            if (m.includes('database error') || m.includes('registration')) return 'التسجيل مغلق: يوجد مدير بالفعل.';
             if (m.includes('at least') || m.includes('weak')) return 'كلمة السر ضعيفة. استخدم 6 أحرف على الأقل.';
             if (m.includes('rate limit') || m.includes('too many')) return 'محاولات كثيرة. انتظر قليلًا ثم أعد المحاولة.';
             if (m.includes('valid email') || m.includes('invalid email')) return 'اسم المستخدم غير صالح.';
@@ -1754,21 +1751,27 @@
             });
         }
 
+        // زائر بلا حساب = مراقب (قراءة فقط). المدير فقط يسجّل الدخول بكلمة سر.
+        async function enterObserver() {
+            stopPolling();
+            session = null; role = 'observer'; authed = true; busyUser = null; recovering = false;
+            hideAuth();
+            applyRole();
+            await loadData();
+            startPolling();
+        }
         async function onSession(sess) {
             if (recovering) return;
-            if (!sess) { onSignedOut(); return; }
+            if (!sess) { await enterObserver(); return; }
             if (authed && session && session.user.id === sess.user.id) { session = sess; return; }
             if (busyUser === sess.user.id) return;
             busyUser = sess.user.id;
-            session = sess;
-            showAuth('loading');
             try {
                 const { data, error } = await sb.from('profiles').select('role').eq('id', sess.user.id).maybeSingle();
                 if (error) { showAuth('error', 'تعذّر قراءة صلاحية حسابك. تحقق من الاتصال ثم أعد المحاولة.'); return; }
-                const r = data ? data.role : 'pending';
-                if (r === 'pending') { authed = false; role = 'observer'; showAuth('pending'); return; }
-                role = r === 'manager' ? 'manager' : 'observer';
-                authed = true;
+                if (!data || data.role !== 'manager') { busyUser = null; await sb.auth.signOut(); return; }
+                session = sess; role = 'manager'; authed = true;
+                stopPolling();
                 hideAuth();
                 applyRole();
                 await loadData();
@@ -1777,14 +1780,10 @@
                 busyUser = null;
             }
         }
-        function onSignedOut() {
-            stopPolling();
-            authed = false; session = null; role = 'observer'; busyUser = null; recovering = false;
+        async function onSignedOut() {
             appData = { entries: [], weeklyBatches: [] };
             savedSnap = { entries: new Map(), batches: new Map() };
-            renderAll();
-            applyRole();
-            showAuth('login');
+            await enterObserver();
         }
         async function recheckAccess() {
             if (!session) { showAuth('login'); return; }
@@ -2038,7 +2037,8 @@
                 </div>
                 <button type="submit" id="loginSubmit" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold shadow-lg shadow-emerald-500/25 transition">دخول</button>
                 <div class="flex items-center justify-between gap-3 text-xs font-bold">
-                    <button type="button" onclick="showAuth('signup')" class="text-emerald-600 dark:text-emerald-400 hover:underline">إنشاء حساب جديد</button>
+                    <button type="button" onclick="hideAuth()" class="text-slate-500 dark:text-slate-400 hover:underline">رجوع للعرض</button>
+                    <button type="button" onclick="showAuth('signup')" class="text-emerald-600 dark:text-emerald-400 hover:underline">إنشاء حساب المدير</button>
                 </div>
             </form>
 
@@ -2056,7 +2056,7 @@
                     <input type="password" id="signupConfirm" autocomplete="new-password" dir="ltr" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
                 </div>
                 <button type="submit" id="signupSubmit" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold shadow-lg shadow-emerald-500/25 transition">إنشاء الحساب</button>
-                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">أول حساب يُنشأ يصبح مدير المحل. أي حساب بعده ينتظر موافقة المدير قبل أن يرى شيئًا.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">هذا الحساب للمدير ويُنشأ مرة واحدة فقط. بعد إنشائه يُغلق التسجيل. المراقبون لا يحتاجون حسابًا.</p>
                 <button type="button" onclick="showAuth('login')" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">لديّ حساب، أريد الدخول</button>
             </form>
 
