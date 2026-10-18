@@ -972,7 +972,7 @@
         function setStorageBadge() {
             const t = document.getElementById('storageText'), d = document.getElementById('storageDot');
             if (!t || !d) return;
-            t.textContent = authed && session ? session.user.email : '...';
+            t.textContent = authed && session ? emailToUser(session.user.email) : '...';
             d.className = 'w-2.5 h-2.5 rounded-full ' + (authed ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600');
         }
         function refreshBatches() {
@@ -1721,14 +1721,20 @@
             document.getElementById('authScreen').hidden = true;
             document.getElementById('appRoot').hidden = false;
         }
+        // الدخول باسم مستخدم: يُحوَّل داخليًا إلى بريد وهمي لأن Supabase يتطلب بريدًا
+        const USER_DOMAIN = '@users.madakhil.app';
+        function normUser(v) { return toLatinDigits(v).trim().toLowerCase(); }
+        function validUser(u) { return /^[a-z0-9][a-z0-9._-]{2,29}$/.test(u); }
+        function userToEmail(u) { return u + USER_DOMAIN; }
+        function emailToUser(e) { return String(e || '').replace(USER_DOMAIN, ''); }
         function authErrorText(err) {
             const m = String((err && err.message) || '').toLowerCase();
-            if (m.includes('invalid login')) return 'البريد أو كلمة السر غير صحيحة.';
-            if (m.includes('email not confirmed')) return 'لم يُؤكَّد البريد بعد. افتح رسالة التأكيد المرسلة إليك.';
-            if (m.includes('already registered') || m.includes('already been registered')) return 'هذا البريد مسجّل مسبقًا. جرّب الدخول.';
+            if (m.includes('invalid login')) return 'اسم المستخدم أو كلمة السر غير صحيحة.';
+            if (m.includes('email not confirmed')) return 'الحساب غير مفعّل بعد. اطلب من المدير تفعيله.';
+            if (m.includes('already registered') || m.includes('already been registered')) return 'اسم المستخدم مستخدم مسبقًا. اختر اسمًا آخر أو سجّل الدخول.';
             if (m.includes('at least') || m.includes('weak')) return 'كلمة السر ضعيفة. استخدم 6 أحرف على الأقل.';
             if (m.includes('rate limit') || m.includes('too many')) return 'محاولات كثيرة. انتظر قليلًا ثم أعد المحاولة.';
-            if (m.includes('valid email') || m.includes('invalid email')) return 'اكتب بريدًا إلكترونيًا صحيحًا.';
+            if (m.includes('valid email') || m.includes('invalid email')) return 'اسم المستخدم غير صالح.';
             if (m.includes('failed to fetch') || m.includes('network')) return 'تعذّر الاتصال بالإنترنت.';
             return 'حدث خطأ. حاول مرة أخرى.';
         }
@@ -1795,7 +1801,8 @@
             setAuthMsg('');
             const btn = document.getElementById('loginSubmit');
             btn.disabled = true;
-            const { error } = await sb.auth.signInWithPassword({ email: document.getElementById('loginEmail').value.trim(), password: document.getElementById('loginPassword').value });
+            const u = normUser(document.getElementById('loginEmail').value);
+            const { error } = await sb.auth.signInWithPassword({ email: userToEmail(u), password: document.getElementById('loginPassword').value });
             btn.disabled = false;
             if (error) setAuthMsg(authErrorText(error));
             else document.getElementById('loginPassword').value = '';
@@ -1803,7 +1810,9 @@
         async function handleSignup(e) {
             e.preventDefault();
             setAuthMsg('');
-            const email = document.getElementById('signupEmail').value.trim();
+            const uname = normUser(document.getElementById('signupEmail').value);
+            if (!validUser(uname)) { setAuthMsg('اسم المستخدم: من 3 إلى 30 حرفًا إنجليزيًا صغيرًا أو أرقامًا أو (_ . -)، ويبدأ بحرف أو رقم.'); return; }
+            const email = userToEmail(uname);
             const pw = document.getElementById('signupPassword').value;
             if (pw.length < 6) { setAuthMsg('كلمة السر 6 أحرف على الأقل.'); return; }
             if (pw !== document.getElementById('signupConfirm').value) { setAuthMsg('كلمتا السر غير متطابقتين.'); return; }
@@ -1813,16 +1822,9 @@
             btn.disabled = false;
             if (error) { setAuthMsg(authErrorText(error)); return; }
             if (!data.session) {
-                document.getElementById('loginEmail').value = email;
-                showAuth('login', 'تم إنشاء الحساب. أكّد بريدك من الرسالة المرسلة إليك ثم سجّل الدخول.', true);
+                document.getElementById('loginEmail').value = uname;
+                showAuth('login', 'تم إنشاء الحساب. إن كان التأكيد مطلوبًا فاطلب من المدير تفعيله، ثم سجّل الدخول.', true);
             }
-        }
-        async function handleForgot() {
-            const email = document.getElementById('loginEmail').value.trim();
-            if (!email) { setAuthMsg('اكتب بريدك أولًا ثم اضغط «نسيت كلمة السر».'); return; }
-            const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
-            if (error) setAuthMsg(authErrorText(error));
-            else setAuthMsg('أرسلنا رابط إعادة تعيين كلمة السر إلى بريدك.', true);
         }
         async function handleRecovery(e) {
             e.preventDefault();
@@ -1901,7 +1903,7 @@
             data.sort((a, b) => (rank[a.role] - rank[b.role]) || String(a.created_at).localeCompare(String(b.created_at)));
             box.innerHTML = data.map(u => (
                 '<div class="py-3 flex items-center justify-between gap-3">' +
-                    '<div class="min-w-0"><div class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate" dir="ltr" style="text-align:right">' + esc(u.email) + '</div>' +
+                    '<div class="min-w-0"><div class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate" dir="ltr" style="text-align:right">' + esc(emailToUser(u.email)) + '</div>' +
                     '<div class="text-xs text-slate-500 dark:text-slate-400">' + (u.id === me ? 'أنت' : formatDateDisplay(String(u.created_at).slice(0, 10))) + '</div></div>' +
                     '<select data-uid="' + esc(u.id) + '" onchange="changeUserRole(this)" ' + (u.id === me ? 'disabled ' : '') + 'class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-semibold">' +
                     Object.keys(ROLE_LABELS).map(r => '<option value="' + r + '"' + (u.role === r ? ' selected' : '') + '>' + ROLE_LABELS[r] + '</option>').join('') +
@@ -2027,8 +2029,8 @@
 
             <form id="authViewLogin" class="hidden space-y-4" onsubmit="handleLogin(event)">
                 <div>
-                    <label for="loginEmail" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">البريد الإلكتروني</label>
-                    <input type="email" id="loginEmail" autocomplete="username" dir="ltr" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                    <label for="loginEmail" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">اسم المستخدم</label>
+                    <input type="text" id="loginEmail" autocomplete="username" autocapitalize="none" spellcheck="false" dir="ltr" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
                 </div>
                 <div>
                     <label for="loginPassword" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">كلمة السر</label>
@@ -2036,15 +2038,14 @@
                 </div>
                 <button type="submit" id="loginSubmit" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold shadow-lg shadow-emerald-500/25 transition">دخول</button>
                 <div class="flex items-center justify-between gap-3 text-xs font-bold">
-                    <button type="button" onclick="handleForgot()" class="text-slate-500 dark:text-slate-400 underline hover:text-slate-700 dark:hover:text-slate-200">نسيت كلمة السر؟</button>
                     <button type="button" onclick="showAuth('signup')" class="text-emerald-600 dark:text-emerald-400 hover:underline">إنشاء حساب جديد</button>
                 </div>
             </form>
 
             <form id="authViewSignup" class="hidden space-y-4" onsubmit="handleSignup(event)">
                 <div>
-                    <label for="signupEmail" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">البريد الإلكتروني</label>
-                    <input type="email" id="signupEmail" autocomplete="username" dir="ltr" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                    <label for="signupEmail" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">اسم المستخدم</label>
+                    <input type="text" id="signupEmail" autocomplete="username" autocapitalize="none" spellcheck="false" dir="ltr" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
                 </div>
                 <div>
                     <label for="signupPassword" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">كلمة السر (6 أحرف على الأقل)</label>
