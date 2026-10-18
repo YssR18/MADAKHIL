@@ -1,0 +1,2096 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#059669">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23059669'/%3E%3Cpath d='M18 40h28M20 24h24l4 12H16z' fill='none' stroke='white' stroke-width='4' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>مداخيل المحل</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        tajawal: ['Tajawal', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    }
+                }
+            }
+        }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/js/all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+        }
+        .glass-card {
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.85);
+        }
+        .dark .glass-card {
+            background: rgba(17, 24, 39, 0.85);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(34, 197, 94, 0.5);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(34, 197, 94, 0.8);
+        }
+    
+        html.dark { color-scheme: dark; }
+        body { background: #f8fafc; }
+        html.dark body { background: #020617; }
+        #appHeader.sticky { top: env(safe-area-inset-top, 0px); }
+        body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 41; background: rgba(255,255,255,.92); }
+        html.dark body::before { background: rgba(15,23,42,.92); }
+
+        #appRoot[data-role="observer"] .mgr-only { display: none !important; }
+        #appRoot[data-role="manager"] .obs-only { display: none !important; }
+        #appRoot[data-role="observer"] .workspace { display: block; }
+
+        /* ---------- Phone layout: one section at a time + bottom navigation (desktop is untouched) ---------- */
+        @media (max-width: 767px) {
+            #appRoot[data-mtab="home"] .ms-add, #appRoot[data-mtab="home"] .ms-log, #appRoot[data-mtab="home"] .ms-weeks { display: none; }
+            #appRoot[data-mtab="add"] .ms-home, #appRoot[data-mtab="add"] .ms-log, #appRoot[data-mtab="add"] .ms-weeks { display: none; }
+            #appRoot[data-mtab="log"] .ms-home, #appRoot[data-mtab="log"] .ms-add, #appRoot[data-mtab="log"] .ms-weeks { display: none; }
+            #appRoot[data-mtab="weeks"] .ms-home, #appRoot[data-mtab="weeks"] .ms-add, #appRoot[data-mtab="weeks"] .ms-log { display: none; }
+
+            #appRoot .m-hide { display: none; }
+            #appRoot[data-role="observer"] .m-ctl { display: none; }
+
+            /* header: compact, scrolls away (navigation lives at the bottom) */
+            #appHeader.sticky { position: static; }
+            #appHeader > div { min-height: 0; padding-top: .6rem; padding-bottom: .6rem; }
+            #appHeader .w-12 { width: 2.5rem; height: 2.5rem; }
+            #appHeader .w-12 i { font-size: 1.15rem; }
+            #appRoot .m-actions { width: 100%; flex-wrap: wrap; }
+
+            /* page flow */
+            #appRoot main { display: flex; flex-direction: column; gap: 1rem; padding-top: 1rem; padding-bottom: 6.5rem; }
+            #appRoot main > * { margin-top: 0 !important; }
+            #appRoot .workspace { display: block; }
+            #appRoot .workspace > div { display: flex; flex-direction: column; gap: 1rem; }
+            #appRoot .workspace > div > * { margin-top: 0 !important; }
+            #appRoot .ms-add .sticky { position: static; }
+            #toastContainer { bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px)); }
+
+            /* compact summary cards: 2 x 2 */
+            #appRoot .m-stats { grid-template-columns: 1fr 1fr; gap: .6rem; }
+            #appRoot .m-stats > div { padding: .85rem; border-radius: 1.25rem; }
+            #appRoot .m-stats .mt-2, #appRoot .m-stats .w-10 { display: none; }
+            #appRoot .m-stats .mb-4 { margin-bottom: .3rem; }
+            #appRoot .m-stats .text-sm { font-size: .72rem; line-height: 1.2; }
+            #appRoot .m-stats .text-2xl { font-size: 1.1rem; line-height: 1.4; overflow-wrap: anywhere; }
+
+            /* filters: date + status share one row */
+            #filterStatus { width: auto; flex: 1 1 0; }
+
+            /* tables become cards */
+            #appRoot table.m-cards, #appRoot table.m-cards tbody { display: block; width: 100%; }
+            #appRoot table.m-cards thead { display: none; }
+            #appRoot table.m-cards tr { display: grid; grid-template-columns: 1fr auto; gap: .2rem .75rem; align-items: center; padding: .8rem 1rem; }
+            #appRoot table.m-cards td { display: block; padding: 0 !important; white-space: normal !important; max-width: none !important; text-align: right; }
+            #appRoot table.m-entries tr { grid-template-areas: "d a" "n n" "s x"; }
+            #appRoot table.m-entries td:nth-child(1) { grid-area: d; }
+            #appRoot table.m-entries td:nth-child(2) { grid-area: a; justify-self: end; font-size: 1.05rem; }
+            #appRoot table.m-entries td:nth-child(3) { grid-area: n; font-size: .8rem; }
+            #appRoot table.m-entries td:nth-child(4) { grid-area: s; justify-self: start; }
+            #appRoot table.m-entries td:nth-child(5) { grid-area: x; justify-self: end; }
+            #appRoot table.m-batches tr { grid-template-areas: "i t" "r r" "c b"; }
+            #appRoot table.m-batches td:nth-child(1) { grid-area: i; }
+            #appRoot table.m-batches td:nth-child(4) { grid-area: t; justify-self: end; font-size: 1.05rem; }
+            #appRoot table.m-batches td:nth-child(2) { grid-area: r; font-size: .8rem; }
+            #appRoot table.m-batches td:nth-child(3) { grid-area: c; font-size: .8rem; }
+            #appRoot table.m-batches td:nth-child(5) { grid-area: b; justify-self: end; }
+        }
+
+        /* bottom navigation (phones only) */
+        #mobileNav .mnav-btn { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: .15rem; padding: .45rem .25rem; border-radius: .9rem; font-size: .7rem; font-weight: 700; color: #64748b; }
+        html.dark #mobileNav .mnav-btn { color: #94a3b8; }
+        #mobileNav .mnav-btn i { font-size: 1.15rem; }
+        #appRoot[data-mtab="home"] .mnav-home, #appRoot[data-mtab="add"] .mnav-add,
+        #appRoot[data-mtab="log"] .mnav-log, #appRoot[data-mtab="weeks"] .mnav-weeks { color: #059669; background: rgba(16, 185, 129, .13); }
+        html.dark #appRoot[data-mtab="home"] .mnav-home, html.dark #appRoot[data-mtab="add"] .mnav-add,
+        html.dark #appRoot[data-mtab="log"] .mnav-log, html.dark #appRoot[data-mtab="weeks"] .mnav-weeks { color: #34d399; background: rgba(52, 211, 153, .14); }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<style>
+        :root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+        html.dark { color-scheme: dark; }
+        body { margin: 0; }
+        [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div id="appRoot" hidden data-mtab="home" class="bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-100/40 dark:from-slate-950 dark:via-slate-900 dark:to-emerald-950/30 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300" dir="rtl" lang="ar">
+
+
+    <!-- Top Navigation / Header -->
+    <header id="appHeader" class="sticky top-0 z-40 backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 min-h-[5rem] py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
+                    <i class="fa-solid fa-cash-register text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-black bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">مداخيل المحل</h1>
+                    <p class="m-hide text-xs text-slate-500 dark:text-slate-400 font-medium">إدارة المداخيل اليومية والترحيل الأسبوعي</p>
+                </div>
+            </div>
+
+            <div class="m-actions flex items-center gap-2 sm:gap-3">
+                <span id="storageBadge" class="hidden sm:flex items-center gap-2 text-xs font-bold px-3 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    <span id="storageDot" class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                    <span id="storageText">جارٍ التحميل...</span>
+                </span>
+                <span id="roleBadge" class="hidden sm:inline-flex items-center text-xs font-bold px-3 py-2.5 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">وضع المراقب</span>
+                <button id="usersBtn" onclick="openUsersModal()" title="إدارة المستخدمين" class="mgr-only relative p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700 transition flex items-center gap-2 font-bold text-xs">
+                    <i class="fa-solid fa-users text-lg"></i>
+                    <span class="hidden md:inline">المستخدمون</span>
+                    <span id="usersBadge" style="display:none" class="absolute -top-1 -left-1 min-w-[1.1rem] h-[1.1rem] rounded-full bg-red-500 text-white text-[10px] font-black items-center justify-center px-1">0</span>
+                </button>
+                <button id="changePwBtn" onclick="openPwModal()" title="تغيير كلمة السر" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700 transition flex items-center gap-2 font-bold text-xs">
+                    <i class="fa-solid fa-user-lock text-lg"></i>
+                    <span class="hidden md:inline">كلمة السر</span>
+                </button>
+                <button id="authBtn" onclick="doLogout()" title="تسجيل الخروج" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-slate-700 transition flex items-center gap-2 font-bold text-xs">
+                    <i class="fa-solid fa-right-from-bracket text-lg"></i>
+                    <span id="authBtnText" class="hidden sm:inline">خروج</span>
+                </button>
+                <!-- Export Reports PDF Button -->
+                <button onclick="openReportModal()" title="طباعة التقرير (يُحفظ كملف PDF)" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700 transition flex items-center gap-2 font-bold text-xs">
+                    <i class="fa-solid fa-file-pdf text-red-500 text-lg"></i>
+                    <span class="hidden sm:inline">طباعة التقرير</span>
+                </button>
+                <!-- Quick Backup / Export / Import -->
+                <button onclick="exportData()" title="تصدير البيانات" class="mgr-only p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700 transition">
+                    <i class="fa-solid fa-download text-lg"></i>
+                </button>
+                <label title="استيراد البيانات" class="mgr-only p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700 transition cursor-pointer">
+                    <i class="fa-solid fa-upload text-lg"></i>
+                    <input type="file" id="importFile" accept=".json" onchange="importData(event)" class="hidden">
+                </label>
+                <!-- Dark Mode Toggle -->
+                <button id="themeToggle" onclick="toggleDarkMode()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-amber-500 dark:text-yellow-400 hover:scale-105 transition shadow-sm" aria-label="تبديل الوضع الليلي">
+                    <span id="themeIcon" class="inline-flex w-[18px] h-[18px]"></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div id="observerBar" class="obs-only max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div class="flex items-start gap-3 rounded-2xl border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 px-4 py-3 text-sm font-semibold">
+            <i class="fa-solid fa-eye mt-1"></i>
+            <p>وضع المراقب: يمكنك مراجعة المداخيل والدفعات وتنزيل التقرير للطباعة فقط. التعديل والحذف والترحيل للمدير.</p>
+        </div>
+    </div>
+
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Toast Notification Area -->
+        <div id="toastContainer" class="fixed bottom-5 left-5 z-50 space-y-2 pointer-events-none"></div>
+
+        <!-- Quick Statistics Dashboard -->
+        <section class="m-stats ms-home grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <!-- Total Income Card -->
+            <div class="glass-card p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none relative overflow-hidden group hover:border-emerald-500/50 transition">
+                <div class="absolute -left-6 -bottom-6 w-28 h-28 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition"></div>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-sm font-semibold text-slate-500 dark:text-slate-400">إجمالي المداخيل المسجلة</span>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white" id="statTotalIncome">0.00 د.ج</div>
+                <div class="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-2 flex items-center gap-1">
+                    <i class="fa-solid fa-arrow-trend-up"></i> شامل جميع الأيام
+                </div>
+            </div>
+
+            <!-- Days Count Card -->
+            <div class="glass-card p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none relative overflow-hidden group hover:border-blue-500/50 transition">
+                <div class="absolute -left-6 -bottom-6 w-28 h-28 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition"></div>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-sm font-semibold text-slate-500 dark:text-slate-400">عدد الأيام المسجلة</span>
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </div>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white" id="statTotalDays">0</div>
+                <div class="text-xs text-blue-600 dark:text-blue-400 font-medium mt-2 flex items-center gap-1">
+                    <i class="fa-solid fa-check-circle"></i> أيام عمل مسجلة
+                </div>
+            </div>
+
+            <!-- Current Week Un-transferred Total -->
+            <div class="glass-card p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none relative overflow-hidden group hover:border-amber-500/50 transition">
+                <div class="absolute -left-6 -bottom-6 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition"></div>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-sm font-semibold text-slate-500 dark:text-slate-400">مداخيل الأسبوع (غير المترحلة)</span>
+                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white" id="statCurrentWeekIncome">0.00 د.ج</div>
+                <div class="text-xs text-amber-600 dark:text-amber-400 font-medium mt-2 flex items-center gap-1">
+                    <i class="fa-solid fa-triangle-exclamation"></i> جاهز للترحيل الأسبوعي
+                </div>
+            </div>
+
+            <!-- Weekly Batches Count -->
+            <div class="glass-card p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none relative overflow-hidden group hover:border-purple-500/50 transition">
+                <div class="absolute -left-6 -bottom-6 w-28 h-28 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition"></div>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-sm font-semibold text-slate-500 dark:text-slate-400">إجمالي الدفعات الأسبوعية</span>
+                    <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                </div>
+                <div class="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white" id="statBatchesCount">0</div>
+                <div class="text-xs text-purple-600 dark:text-purple-400 font-medium mt-2 flex items-center gap-1">
+                    <i class="fa-solid fa-shield-halved"></i> دفعات محفوظة بالأرشيف
+                </div>
+            </div>
+        </section>
+
+        <!-- Weekly Transfer Reminder Banner -->
+        <div id="weeklyReminderBanner" class="ms-home hidden mgr-only glass-card rounded-3xl border border-amber-300 dark:border-amber-700/60 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 p-5 shadow-lg relative overflow-hidden transition-all duration-300">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-start sm:items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center text-xl font-bold shadow-md shadow-amber-500/30 flex-shrink-0 animate-bounce">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-black text-amber-900 dark:text-amber-300 flex items-center gap-2">
+                            تذكير نهاية الأسبوع: ترحيل المداخيل
+                        </h3>
+                        <p id="reminderBannerText" class="text-xs sm:text-sm text-amber-800/80 dark:text-amber-200/80 font-semibold mt-1">
+                            حذار، لديك مداخيل يومية أسبوعية غير مرحلة! قم بتحويلها الآن للدفعة الأسبوعية لحفظ السجلات وتصفير الحساب الأسبوعي.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <button onclick="openWeeklyTransferModal()" class="py-2.5 px-5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black shadow-md text-xs sm:text-sm transition flex items-center justify-center gap-2 w-full sm:w-auto">
+                        <i class="fa-solid fa-arrows-split-up-and-left"></i>
+                        ترحيل الآن
+                    </button>
+                    <button onclick="dismissReminder()" title="إخفاء التنبيه مؤقتاً" class="p-2.5 rounded-2xl bg-amber-100/60 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 hover:bg-amber-200 transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phone only: quick transfer + latest entries -->
+        <button onclick="openWeeklyTransferModal()" class="ms-home mgr-only flex md:hidden w-full py-3 px-5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold shadow-lg shadow-amber-500/20 text-sm items-center justify-center gap-2">
+            <i class="fa-solid fa-arrows-split-up-and-left"></i>
+            ترحيل مداخيل الأسبوع لدفعة
+        </button>
+        <div id="mLatestCard" class="ms-home md:hidden glass-card rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-md overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <h3 class="font-bold text-sm text-slate-800 dark:text-white">آخر الإدخالات</h3>
+                <button type="button" onclick="setMobileTab('log')" class="text-xs font-bold text-emerald-600 dark:text-emerald-400">عرض السجل كله</button>
+            </div>
+            <div id="mLatestList" class="divide-y divide-slate-100 dark:divide-slate-800"></div>
+        </div>
+
+        <!-- Main Workspace Grid -->
+        <div class="workspace grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Right Column: Add Daily Income Form -->
+            <div class="ms-add mgr-only lg:col-span-1 space-y-6">
+                <div id="mTodayStrip" class="md:hidden glass-card rounded-2xl border border-slate-200/80 dark:border-slate-800 px-4 py-3 flex items-center justify-between">
+                    <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">مجموع مدخول اليوم</span>
+                    <span id="mTodayTotal" class="font-black text-emerald-600 dark:text-emerald-400">0.00 د.ج</span>
+                </div>
+                <div class="glass-card p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none sticky top-28">
+                    <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-100 dark:border-slate-800">
+                        <h2 class="text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+                            <i class="fa-solid fa-circle-plus text-emerald-500"></i>
+                            إضافة مدخول يومي جديد
+                        </h2>
+                    </div>
+
+                    <form id="incomeForm" onsubmit="handleIncomeSubmit(event)" class="space-y-5">
+                        <!-- Date Input -->
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">تاريخ اليوم (يوم_شهر_سنة)</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-400">
+                                    <i class="fa-regular fa-calendar"></i>
+                                </span>
+                                <input type="text" id="entryDate" data-datefmt inputmode="numeric" maxlength="8" dir="ltr" placeholder="dd_mm_yy" autocomplete="off" style="text-align:right" required
+                                    class="w-full pr-11 pl-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-sm transition">
+                            </div>
+                        </div>
+
+                        <!-- Amount Input -->
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">المبلغ المالي (د.ج)</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-400 font-bold">
+                                    د.ج
+                                </span>
+                                <input type="number" step="0.01" min="0" id="entryAmount" placeholder="0.00" required onwheel="this.blur()"
+                                    class="w-full pr-14 pl-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-black text-lg transition">
+                            </div>
+                        </div>
+
+                        <!-- Note Input -->
+                        <div>
+                            <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">ملاحظة اختيارية</label>
+                            <div class="relative">
+                                <textarea id="entryNote" rows="3" placeholder="أدخل تفاصيل أو ملاحظة حول المبيعات اليومية..."
+                                    class="w-full p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit"
+                            class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold shadow-lg shadow-emerald-500/25 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-plus-circle"></i>
+                            <span>حفظ الإدخال</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Left Column: Tables, Records & Weekly Transfer -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Section Tabs & Controls -->
+                <div class="ms-weeks m-ctl glass-card p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none flex flex-wrap items-center justify-between gap-4">
+                    <!-- Navigation Tabs -->
+                    <div class="m-hide flex items-center bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl gap-1">
+                        <button onclick="switchTab('daily')" id="tabDaily"
+                            class="px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm">
+                            <i class="fa-solid fa-list-check"></i>
+                            السجل اليومي
+                        </button>
+                        <button onclick="switchTab('weekly')" id="tabWeekly"
+                            class="px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900">
+                            <i class="fa-solid fa-boxes-stacked"></i>
+                            سجل الدفعات الأسبوعية
+                        </button>
+                    </div>
+
+                    <!-- Weekly Transfer Action Button -->
+                    <button onclick="openWeeklyTransferModal()" class="mgr-only max-md:w-full max-md:justify-center py-2.5 px-5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-amber-500/20 text-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrows-split-up-and-left"></i>
+                        ترحيل مداخيل الأسبوع لدفعة
+                    </button>
+                </div>
+
+                <!-- Daily Entries Tab Content -->
+                <div id="contentDaily" class="ms-log space-y-4">
+                    <!-- Search & Filter Bar -->
+                    <div class="glass-card p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-md flex flex-col sm:flex-row items-center gap-3">
+                        <div class="relative flex-1 w-full">
+                            <span class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                            <input type="text" id="searchInput" oninput="renderDailyEntries()" placeholder="بحث في الملاحظات أو التاريخ..."
+                                class="w-full pr-11 pl-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                            <input type="text" id="filterDate" data-datefmt inputmode="numeric" maxlength="8" dir="ltr" placeholder="dd_mm_yy" autocomplete="off" style="text-align:right" oninput="renderDailyEntries()" title="بحث بالتاريخ (dd_mm_yy)" aria-label="بحث بالتاريخ" class="flex-1 sm:flex-none sm:w-36 px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <select id="filterStatus" onchange="renderDailyEntries()"
+                                class="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                <option value="all">كل الإدخالات</option>
+                                <option value="untransferred">غير المترحلة فقط</option>
+                                <option value="transferred">المترحلة مسبقاً</option>
+                            </select>
+                            <button type="button" id="clearFiltersBtn" onclick="clearFilters()" class="hidden px-4 py-2.5 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition">مسح البحث</button>
+                        </div>
+                    </div>
+
+                    <!-- Entries List container -->
+                    <div class="glass-card rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl overflow-hidden">
+                        <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <h3 class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-table-list text-emerald-500"></i>
+                                قائمة المداخيل اليومية
+                            </h3>
+                            <span id="entriesCountBadge" class="text-xs px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 font-bold">0 إدخال</span>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="m-cards m-entries w-full text-right border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50/80 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                                        <th class="py-4 px-6">التاريخ</th>
+                                        <th class="py-4 px-6">المبلغ</th>
+                                        <th class="py-4 px-6">الملاحظة</th>
+                                        <th class="py-4 px-6">الحالة</th>
+                                        <th class="mgr-only py-4 px-6 text-center">الإجراءات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dailyEntriesTableBody" class="divide-y divide-slate-100 dark:divide-slate-800 text-sm font-medium">
+                                    <!-- Populated via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="noDailyEntries" class="hidden py-16 text-center text-slate-400">
+                            <i class="fa-solid fa-folder-open text-4xl mb-3 opacity-40"></i>
+                            <p class="font-semibold">لا توجد إدخالات مطابقة للبحث أو مسجلة حالياً.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly Batches Tab Content -->
+                <div id="contentWeekly" class="ms-weeks space-y-4 hidden">
+                    <div class="glass-card rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl overflow-hidden">
+                        <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <h3 class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                <i class="fa-solid fa-box-archive text-purple-500"></i>
+                                أرشيف الدفعات الأسبوعية
+                            </h3>
+                            <span id="batchesCountBadge" class="text-xs px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 font-bold">0 دفعة</span>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="m-cards m-batches w-full text-right border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50/80 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
+                                        <th class="py-4 px-6">رقم / مرجع الدفعة</th>
+                                        <th class="py-4 px-6">تاريخ الإنشاء</th>
+                                        <th class="py-4 px-6">عدد الإدخالات</th>
+                                        <th class="py-4 px-6">إجمالي المبلغ</th>
+                                        <th class="py-4 px-6 text-center">التفاصيل / الإجراء</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="weeklyBatchesTableBody" class="divide-y divide-slate-100 dark:divide-slate-800 text-sm font-medium">
+                                    <!-- Populated via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="noWeeklyBatches" class="hidden py-16 text-center text-slate-400">
+                            <i class="fa-solid fa-box-open text-4xl mb-3 opacity-40"></i>
+                            <p class="font-semibold">لا توجد دفعات أسبوعية مرحلة حتى الآن.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Phone bottom navigation -->
+    <nav id="mobileNav" class="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur border-t border-slate-200 dark:border-slate-800 flex items-stretch gap-1 px-2 pt-1" style="padding-bottom: calc(.25rem + env(safe-area-inset-bottom, 0px));" aria-label="التنقل">
+        <button type="button" class="mnav-btn mnav-home" onclick="setMobileTab('home')"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
+        <button type="button" class="mnav-btn mnav-add mgr-only" onclick="setMobileTab('add')"><i class="fa-solid fa-circle-plus"></i><span>إضافة</span></button>
+        <button type="button" class="mnav-btn mnav-log" onclick="setMobileTab('log')"><i class="fa-solid fa-list-check"></i><span>السجل</span></button>
+        <button type="button" class="mnav-btn mnav-weeks" onclick="setMobileTab('weeks')"><i class="fa-solid fa-boxes-stacked"></i><span>الدفعات</span></button>
+    </nav>
+
+    <!-- Change password (any signed-in user) -->
+    <div id="pwModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-card bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5">
+            <div class="flex items-start justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl font-bold flex-shrink-0"><i class="fa-solid fa-lock"></i></div>
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white">تغيير كلمة السر</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">6 أحرف على الأقل</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closePwModal()" aria-label="إغلاق" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="pwForm" onsubmit="handlePwSubmit(event)" class="space-y-4">
+                <div>
+                    <label for="pwNew" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">كلمة السر الجديدة</label>
+                    <input type="password" id="pwNew" autocomplete="new-password" class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                </div>
+                <div>
+                    <label for="pwConfirm" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">أعد كتابتها</label>
+                    <input type="password" id="pwConfirm" autocomplete="new-password" class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                </div>
+                <p id="pwErr" role="alert" class="text-sm font-semibold text-red-600 dark:text-red-400 min-h-[1.25rem]"></p>
+                <div class="flex items-center gap-3">
+                    <button type="submit" id="pwSubmit" class="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold shadow-lg shadow-emerald-500/25 transition">حفظ</button>
+                    <button type="button" onclick="closePwModal()" class="py-3.5 px-5 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Users (manager only) -->
+    <div id="usersModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-card bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5">
+            <div class="flex items-start justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl font-bold flex-shrink-0"><i class="fa-solid fa-users"></i></div>
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white">المستخدمون</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">من يسجّل حسابًا جديدًا ينتظر موافقتك هنا</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeUsersModal()" aria-label="إغلاق" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div id="usersList" class="max-h-96 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800"></div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">مدير: كل الصلاحيات. مراقب: مراجعة وتنزيل التقرير فقط. بانتظار الموافقة: لا يرى شيئًا. لا يمكن إزالة آخر مدير.</p>
+        </div>
+    </div>
+
+    <!-- Modal for Editing Entry --><!-- Modal for Editing Entry -->
+    <div id="editModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-card bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white">تعديل مدخول يومي</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">قم بتحديث تفاصيل هذا الإدخال</p>
+                    </div>
+                </div>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <form id="editForm" onsubmit="handleEditSubmit(event)" class="space-y-4">
+                <input type="hidden" id="modalEditEntryId">
+                
+                <!-- Date Input -->
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">التاريخ</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-regular fa-calendar"></i>
+                        </span>
+                        <input type="text" id="modalEditDate" data-datefmt inputmode="numeric" maxlength="8" dir="ltr" placeholder="dd_mm_yy" autocomplete="off" style="text-align:right" required
+                            class="w-full pr-11 pl-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-sm transition">
+                    </div>
+                </div>
+
+                <!-- Amount Input -->
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">المبلغ المالي (د.ج)</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-400 font-bold">
+                            د.ج
+                        </span>
+                        <input type="number" step="0.01" min="0" id="modalEditAmount" placeholder="0.00" required onwheel="this.blur()"
+                            class="w-full pr-14 pl-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-black text-lg transition">
+                    </div>
+                </div>
+
+                <!-- Note Input -->
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">ملاحظة</label>
+                    <textarea id="modalEditNote" rows="3" placeholder="تعديل تفاصيل الملاحظة..."
+                        class="w-full p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition"></textarea>
+                </div>
+
+                <div class="flex items-center gap-3 pt-2">
+                    <button type="submit" class="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold shadow-lg shadow-blue-500/25 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-check"></i>
+                        حفظ التغييرات
+                    </button>
+                    <button type="button" onclick="closeEditModal()" class="py-3.5 px-5 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Weekly Transfer Confirmation Modal -->
+    <div id="weeklyTransferModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-card bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6 transform transition-all">
+            <div class="flex items-center justify-between">
+                <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl font-bold">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                </div>
+                <button onclick="closeWeeklyTransferModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div>
+                <h3 class="text-xl font-black text-slate-900 dark:text-white mb-2">ترحيل مداخيل الأسبوع إلى دفعة أسبوعية</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    سيتم تجميع كافة الإدخالات اليومية غير المترحلة حتى تاريخ اليوم وحفظها في دفعة أسبوعية مستقلة، مع تحديث حالتها لتصبح "مترحلة".
+                </p>
+            </div>
+
+            <div class="bg-slate-50 dark:bg-slate-800/60 rounded-2xl p-4 space-y-3 border border-slate-200 dark:border-slate-700">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-500 dark:text-slate-400 font-medium">عدد الإدخالات غير المترحلة:</span>
+                    <span id="modalUntransferredDays" class="font-bold text-slate-900 dark:text-white">0 يوم</span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-500 dark:text-slate-400 font-medium">مجموع المداخيل لهذه الفترة:</span>
+                    <span id="modalUntransferredAmount" class="font-extrabold text-emerald-600 dark:text-emerald-400 text-lg">0.00 د.ج</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+                <button onclick="executeWeeklyTransfer()"
+                    class="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-amber-500/25 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-check-double"></i>
+                    تأكيد الترحيل وحفظ الدفعة
+                </button>
+                <button onclick="closeWeeklyTransferModal()"
+                    class="py-3.5 px-5 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Batch Details Modal -->
+    <div id="batchDetailsModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-card bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div>
+                    <h3 id="batchModalTitle" class="text-lg font-black text-slate-900 dark:text-white">تفاصيل الدفعة الأسبوعية</h3>
+                    <p id="batchModalSubtitle" class="text-xs text-slate-500 dark:text-slate-400 mt-1">تاريخ الإنشاء والمبلغ الإجمالي</p>
+                </div>
+                <button onclick="closeBatchDetailsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="max-h-80 overflow-y-auto space-y-3" id="batchModalEntriesList">
+                <!-- Entries inside batch -->
+            </div>
+
+            <div class="flex justify-between items-center gap-3 pt-2">
+                <button id="undoBatchBtn" onclick="undoCurrentBatch()" class="mgr-only py-2.5 px-4 rounded-xl text-red-600 dark:text-red-400 font-bold hover:bg-red-50 dark:hover:bg-slate-800 transition text-xs">إلغاء هذه الدفعة</button>
+                <button onclick="closeBatchDetailsModal()"
+                    class="py-2.5 px-6 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition text-sm">
+                    إغلاق
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate PDF Report Modal -->
+    <div id="reportModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-card bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-950/80 text-red-600 dark:text-red-400 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-file-pdf"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white">طباعة التقرير (PDF)</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">اختر الفترة ثم احفظ التقرير كملف PDF لتطبع منه</p>
+                    </div>
+                </div>
+                <button onclick="closeReportModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">نوع التقرير</label>
+                    <select id="reportType" onchange="toggleReportSelectors()" class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="weekly">تقرير أسبوعي (من دفعة مرحّلة)</option>
+                        <option value="monthly">تقرير شهري (حسب الشهر والسنة)</option>
+                    </select>
+                </div>
+
+                <!-- Selector for Weekly Batch -->
+                <div id="weeklyReportSelectGroup">
+                    <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">اختر الدفعة الأسبوعية</label>
+                    <select id="reportBatchSelect" class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <!-- Selector for Month & Year -->
+                <div id="monthlyReportSelectGroup" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">اختر الشهر والسنة</label>
+                        <input type="month" id="reportMonthSelect" class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+                <button onclick="generatePDF()" class="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold shadow-lg shadow-red-500/25 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-download"></i>
+                    تنزيل ملف PDF
+                </button>
+                <button onclick="closeReportModal()" class="py-3.5 px-5 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Template Area for PDF Generation -->
+    <div class="hidden">
+        <div id="pdfReportTemplate" class="p-8 bg-white text-slate-900 font-sans dir-rtl" style="width: 750px; font-family: 'Tajawal', sans-serif;">
+            <!-- Header -->
+            <div class="flex justify-between items-center border-b-2 border-slate-800 pb-4 mb-6">
+                <div>
+                    <h1 class="text-2xl font-black text-slate-900">مداخيل المحل - تقرير المداخيل</h1>
+                    <p id="pdfReportSubtitle" class="text-sm font-bold text-slate-600 mt-1"></p>
+                </div>
+                <div class="text-left text-xs font-semibold text-slate-500">
+                    <p>تاريخ الإصدار: <span id="pdfReportGeneratedDate"></span></p>
+                </div>
+            </div>
+
+            <!-- Report Summary Box -->
+            <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+                <div class="p-4 bg-slate-100 rounded-xl border border-slate-200">
+                    <p class="text-xs text-slate-500 font-bold mb-1">المبلغ الإجمالي</p>
+                    <p id="pdfReportTotalAmount" class="text-lg font-black text-emerald-600"></p>
+                </div>
+                <div class="p-4 bg-slate-100 rounded-xl border border-slate-200">
+                    <p class="text-xs text-slate-500 font-bold mb-1">عدد أيام العمل</p>
+                    <p id="pdfReportTotalDays" class="text-lg font-black text-slate-800"></p>
+                </div>
+                <div class="p-4 bg-slate-100 rounded-xl border border-slate-200">
+                    <p class="text-xs text-slate-500 font-bold mb-1">معدل المدخول اليومي</p>
+                    <p id="pdfReportAvgAmount" class="text-lg font-black text-blue-600"></p>
+                </div>
+            </div>
+
+            <!-- Entries Table -->
+            <table class="w-full text-right border-collapse mb-8 text-xs">
+                <thead>
+                    <tr class="bg-slate-800 text-white font-bold">
+                        <th class="py-2.5 px-4 border border-slate-800">التاريخ</th>
+                        <th class="py-2.5 px-4 border border-slate-800">المبلغ</th>
+                        <th class="py-2.5 px-4 border border-slate-800">الملاحظة</th>
+                        <th class="py-2.5 px-4 border border-slate-800">الحالة</th>
+                    </tr>
+                </thead>
+                <tbody id="pdfReportTableBody">
+                    <!-- Dynamic -->
+                </tbody>
+            </table>
+
+            <!-- Footer -->
+            <div class="pt-4 border-t border-slate-300 text-center text-xs text-slate-400">
+                <p>تم استخراج هذا التقرير تلقائياً عبر تطبيق مداخيل المحل لإدارة المداخيل</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-card bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl text-center space-y-4">
+            <div class="w-16 h-16 rounded-full bg-red-100 dark:bg-red-950/80 text-red-600 dark:text-red-400 flex items-center justify-center text-2xl mx-auto">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-lg font-black text-slate-900 dark:text-white">تأكيد الحذف</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400">هل أنت متأكد من رغبتك في حذف هذا الإدخال؟ لا يمكن التراجع عن هذا الإجراء.</p>
+            <div class="flex gap-3 pt-2">
+                <button id="confirmDeleteBtn" onclick=""
+                    class="flex-1 py-3 rounded-2xl bg-red-500 hover:bg-red-600 text-white font-bold shadow-lg shadow-red-500/25 transition text-sm">
+                    حذف نهائي
+                </button>
+                <button onclick="closeDeleteModal()"
+                    class="flex-1 py-3 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 transition text-sm">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // State Management
+        let appData = {
+            entries: [],
+            weeklyBatches: []
+        };
+
+        let currentDeleteId = null;
+        let reminderDismissed = false;
+
+        // ---------------- Supabase connection ----------------
+        const CFG = window.APP_CONFIG || {};
+        let sb = null;
+        let session = null;
+        let authed = false;
+        let role = 'observer';
+        let recovering = false;
+        let busyUser = null;
+        let savedSnap = { entries: new Map(), batches: new Map() };
+        let saveQueue = Promise.resolve();
+        let pendingSyncs = 0;
+        let pollTimer = null;
+        let currentBatchId = null;
+        let undoArmed = false;
+        let themeChoice = null;
+        const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+        function esc(v) {
+            return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        function cleanId(v) {
+            return String(v == null ? '' : v).replace(/[^A-Za-z0-9_\-]/g, '').slice(0, 60);
+        }
+        function isRealDate(iso) {
+            if (!DATE_RE.test(String(iso))) return false;
+            const p = String(iso).split('-').map(Number);
+            const d = new Date(p[0], p[1] - 1, p[2]);
+            return d.getFullYear() === p[0] && d.getMonth() === p[1] - 1 && d.getDate() === p[2];
+        }
+        function validIso(v) {
+            const t = Date.parse(v);
+            return isNaN(t) ? new Date().toISOString() : new Date(t).toISOString();
+        }
+        function sanitizeEntry(e) {
+            if (!e) return null;
+            const id = cleanId(e.id), amount = Number(e.amount);
+            if (!id || !isRealDate(e.date) || !isFinite(amount) || amount <= 0) return null;
+            return { id, date: String(e.date), amount: Math.round(amount * 100) / 100, note: String(e.note || '').slice(0, 500),
+                     transferred: !!e.transferred, createdAt: validIso(e.createdAt) };
+        }
+        function sanitizeBatch(x) {
+            if (!x) return null;
+            const id = cleanId(x.id), total = Number(x.totalAmount);
+            if (!id || !isFinite(total)) return null;
+            const okDate = v => isRealDate(v) ? String(v) : '';
+            return { id, startDate: okDate(x.startDate), endDate: okDate(x.endDate), totalAmount: Math.round(total * 100) / 100,
+                     entriesCount: Number(x.entriesCount) || 0,
+                     entryIds: (Array.isArray(x.entryIds) ? x.entryIds : []).map(cleanId).filter(Boolean),
+                     createdAt: validIso(x.createdAt) };
+        }
+
+        // app state <-> database rows
+        function toRows() {
+            const entries = new Map(), batches = new Map();
+            appData.entries.forEach(e => entries.set(e.id, { id: e.id, entry_date: e.date, amount: e.amount, note: e.note || '', transferred: !!e.transferred, created_at: validIso(e.createdAt) }));
+            appData.weeklyBatches.forEach(x => batches.set(x.id, { id: x.id, start_date: x.startDate || null, end_date: x.endDate || null, total_amount: x.totalAmount, entries_count: x.entriesCount || 0, entry_ids: x.entryIds || [], created_at: validIso(x.createdAt) }));
+            return { entries, batches };
+        }
+        function snapshotNow() {
+            const rows = toRows(), snap = { entries: new Map(), batches: new Map() };
+            rows.entries.forEach((r, id) => snap.entries.set(id, JSON.stringify(r)));
+            rows.batches.forEach((r, id) => snap.batches.set(id, JSON.stringify(r)));
+            return snap;
+        }
+        async function fetchAll(table, orderCol) {
+            const out = [];
+            for (let from = 0; ; from += 1000) {
+                const { data, error } = await sb.from(table).select('*').order(orderCol, { ascending: false }).order('id').range(from, from + 999);
+                if (error) throw error;
+                out.push(...data);
+                if (data.length < 1000) break;
+            }
+            return out;
+        }
+        async function loadData() {
+            if (!sb || !authed) return;
+            try {
+                const [er, br] = await Promise.all([fetchAll('entries', 'entry_date'), fetchAll('batches', 'created_at')]);
+                appData = {
+                    entries: er.map(r => ({ id: r.id, date: r.entry_date, amount: Number(r.amount), note: r.note || '', transferred: !!r.transferred, createdAt: r.created_at })),
+                    weeklyBatches: br.map(r => ({ id: r.id, startDate: r.start_date || '', endDate: r.end_date || '', totalAmount: Number(r.total_amount), entriesCount: r.entries_count || 0, entryIds: r.entry_ids || [], createdAt: r.created_at }))
+                };
+                savedSnap = snapshotNow();
+                renderAll();
+                if (role === 'manager') refreshPendingBadge();
+            } catch (e) {
+                showToast('تعذّر تحميل البيانات. تحقق من الاتصال بالإنترنت.', 'error');
+            }
+        }
+        function queueSync() {
+            pendingSyncs++;
+            saveQueue = saveQueue.then(syncToDb).catch(() => {}).then(() => { pendingSyncs--; });
+        }
+        async function syncToDb() {
+            if (!sb || !authed) return;
+            const want = toRows();
+            let failed = false;
+            for (const key of ['entries', 'batches']) {
+                const gone = Array.from(savedSnap[key].keys()).filter(id => !want[key].has(id));
+                for (let i = 0; i < gone.length; i += 100) {
+                    const part = gone.slice(i, i + 100);
+                    const { error } = await sb.from(key).delete().in('id', part);
+                    if (error) failed = true; else part.forEach(id => savedSnap[key].delete(id));
+                }
+            }
+            for (const key of ['entries', 'batches']) {
+                const changed = [];
+                want[key].forEach((row, id) => {
+                    const j = JSON.stringify(row);
+                    if (savedSnap[key].get(id) !== j) changed.push([id, row, j]);
+                });
+                for (let i = 0; i < changed.length; i += 200) {
+                    const part = changed.slice(i, i + 200);
+                    const { error } = await sb.from(key).upsert(part.map(p => p[1]), { onConflict: 'id' });
+                    if (error) failed = true; else part.forEach(p => savedSnap[key].set(p[0], p[2]));
+                }
+            }
+            if (failed) {
+                showToast('تعذّر الحفظ في قاعدة البيانات. أعدنا تحميل البيانات المحفوظة.', 'error');
+                await loadData();
+            }
+        }
+        function startPolling() {
+            stopPolling();
+            pollTimer = setInterval(pollTick, 60000);
+        }
+        function stopPolling() { clearInterval(pollTimer); pollTimer = null; }
+        async function pollTick() {
+            if (document.hidden || !authed || pendingSyncs > 0 || !session) return;
+            try {
+                const { data } = await sb.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
+                const r = data ? data.role : 'pending';
+                if (r !== role) { authed = false; stopPolling(); busyUser = null; await onSession(session); return; }
+            } catch (e) { return; }
+            await loadData();
+        }
+        document.addEventListener('visibilitychange', () => { if (!document.hidden && authed && pendingSyncs === 0) pollTick(); });
+        function setStorageBadge() {
+            const t = document.getElementById('storageText'), d = document.getElementById('storageDot');
+            if (!t || !d) return;
+            t.textContent = authed && session ? session.user.email : '...';
+            d.className = 'w-2.5 h-2.5 rounded-full ' + (authed ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600');
+        }
+        function refreshBatches() {
+            const byId = new Map(appData.entries.map(e => [e.id, e]));
+            appData.weeklyBatches.forEach(x => {
+                const live = (x.entryIds || []).filter(id => byId.has(id));
+                x.entryIds = live;
+                x.entriesCount = live.length;
+                x.totalAmount = Math.round(live.reduce((s, id) => s + byId.get(id).amount, 0) * 100) / 100;
+                if (live.length) {
+                    const ds = live.map(id => byId.get(id).date).sort();
+                    x.startDate = ds[0];
+                    x.endDate = ds[ds.length - 1];
+                }
+            });
+            appData.weeklyBatches = appData.weeklyBatches.filter(x => x.entryIds.length > 0);
+        }
+        function undoCurrentBatch() {
+            if (!requireManager()) return;
+            const btn = document.getElementById('undoBatchBtn');
+            if (!undoArmed) {
+                undoArmed = true;
+                btn.textContent = 'اضغط مرة أخرى للتأكيد';
+                return;
+            }
+            const x = appData.weeklyBatches.find(item => item.id === currentBatchId);
+            if (x) {
+                appData.entries.forEach(e => { if ((x.entryIds || []).includes(e.id)) e.transferred = false; });
+                appData.weeklyBatches = appData.weeklyBatches.filter(item => item.id !== currentBatchId);
+                saveToLocalStorage();
+                renderAll();
+                showToast('تم إلغاء الدفعة وإرجاع إدخالاتها إلى غير المترحلة');
+            }
+            closeBatchDetailsModal();
+        }
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterDate').value = '';
+            document.getElementById('filterStatus').value = 'all';
+            renderDailyEntries();
+        }
+
+
+        // Initialize App on DOM Load
+        const bootApp = () => {
+            initTheme();
+            applyRole();
+            setDefaultDate();
+            renderAll();
+            initAuth();
+        };
+
+
+        // Set default date dynamically to current date from the device system
+        function setDefaultDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            document.getElementById('entryDate').value = isoToDmy(`${year}-${month}-${day}`);
+        }
+
+        // Every change goes to the database through one queue
+        function saveToLocalStorage() { queueSync(); }
+
+        // Theme Handling (follows the viewer's theme until the user picks one here)
+        const ICON_MOON = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+        const ICON_SUN = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+
+        function currentThemeIsDark() {
+            if (themeChoice === 'dark' || themeChoice === 'light') return themeChoice === 'dark';
+            const attr = document.documentElement.getAttribute('data-theme');
+            if (attr === 'dark' || attr === 'light') return attr === 'dark';
+            return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        }
+
+        function applyTheme() {
+            const dark = currentThemeIsDark();
+            document.documentElement.classList.toggle('dark', dark);
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.innerHTML = dark ? ICON_SUN : ICON_MOON;
+        }
+
+        function initTheme() {
+            try {
+                const saved = localStorage.getItem('shop_income_theme');
+                if (saved === 'dark' || saved === 'light') themeChoice = saved;
+            } catch (e) {}
+            applyTheme();
+            const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+            if (mq && mq.addEventListener) mq.addEventListener('change', applyTheme);
+            new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+        }
+
+        function toggleDarkMode() {
+            themeChoice = currentThemeIsDark() ? 'light' : 'dark';
+            try { localStorage.setItem('shop_income_theme', themeChoice); } catch (e) {}
+            applyTheme();
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-emerald-600 text-white' : (type === 'error' ? 'bg-red-600 text-white' : 'bg-slate-800 text-white');
+            const icon = type === 'success' ? 'fa-circle-check' : (type === 'error' ? 'fa-circle-xmark' : 'fa-circle-info');
+
+            toast.className = `${bgColor} px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 text-sm font-bold transform translate-y-4 opacity-0 transition-all duration-300 pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span>${message}</span>`;
+            
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-4', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Form Submit for Creating New Entry
+        function handleIncomeSubmit(e) {
+            e.preventDefault();
+            if (!requireManager()) return;
+            e.preventDefault();
+            const date = dmyToIso(document.getElementById('entryDate').value);
+            const amount = parseFloat(document.getElementById('entryAmount').value);
+            const note = document.getElementById('entryNote').value.trim();
+
+            if (!date) {
+                showToast('اكتب التاريخ بصيغة dd_mm_yy مثل 17_10_26', 'error');
+                return;
+            }
+            if (isNaN(amount) || amount <= 0) {
+                showToast('يرجى إدخال تاريخ ومبلغ صحيحين', 'error');
+                return;
+            }
+
+            const newEntry = {
+                id: '_' + Math.random().toString(36).substr(2, 9),
+                date,
+                amount,
+                note,
+                transferred: false,
+                createdAt: new Date().toISOString()
+            };
+            appData.entries.unshift(newEntry);
+            showToast('تمت إضافة المدخول اليومي بنجاح');
+
+            saveToLocalStorage();
+            resetForm();
+            renderAll();
+        }
+
+        function resetForm() {
+            document.getElementById('incomeForm').reset();
+            setDefaultDate();
+        }
+
+        // Edit Modal Popup Handlers
+        function openEditModal(id) {
+            if (!requireManager()) return;
+            const entry = appData.entries.find(item => item.id === id);
+            if (!entry) return;
+
+            document.getElementById('modalEditEntryId').value = entry.id;
+            document.getElementById('modalEditDate').value = isoToDmy(entry.date);
+            document.getElementById('modalEditAmount').value = entry.amount;
+            document.getElementById('modalEditNote').value = entry.note || '';
+
+            document.getElementById('editModal').classList.remove('hidden');
+            document.getElementById('editModal').classList.add('flex');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('flex');
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        function handleEditSubmit(e) {
+            e.preventDefault();
+            if (!requireManager()) return;
+            e.preventDefault();
+            const editId = document.getElementById('modalEditEntryId').value;
+            const date = dmyToIso(document.getElementById('modalEditDate').value);
+            const amount = parseFloat(document.getElementById('modalEditAmount').value);
+            const note = document.getElementById('modalEditNote').value.trim();
+
+            if (!date) {
+                showToast('اكتب التاريخ بصيغة dd_mm_yy مثل 17_10_26', 'error');
+                return;
+            }
+            if (isNaN(amount) || amount <= 0) {
+                showToast('يرجى إدخال تاريخ ومبلغ صحيحين', 'error');
+                return;
+            }
+
+            const entry = appData.entries.find(item => item.id === editId);
+            if (entry) {
+                entry.date = date;
+                entry.amount = amount;
+                entry.note = note;
+                refreshBatches();
+                saveToLocalStorage();
+                renderAll();
+                closeEditModal();
+                showToast('تم تعديل الإدخال اليومي بنجاح');
+            }
+        }
+
+        // Deletion handling with custom modal
+        function promptDelete(id) {
+            if (!requireManager()) return;
+            currentDeleteId = id;
+            document.getElementById('confirmDeleteBtn').setAttribute('onclick', `executeDelete()`);
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.getElementById('deleteModal').classList.add('flex');
+        }
+
+        function closeDeleteModal() {
+            currentDeleteId = null;
+            document.getElementById('deleteModal').classList.remove('flex');
+            document.getElementById('deleteModal').classList.add('hidden');
+        }
+
+        function executeDelete() {
+            if (!requireManager()) return;
+            if (!currentDeleteId) return;
+            appData.entries = appData.entries.filter(item => item.id !== currentDeleteId);
+            refreshBatches();
+            saveToLocalStorage();
+            closeDeleteModal();
+            renderAll();
+            showToast('تم حذف الإدخال بنجاح', 'error');
+        }
+
+        // Tab Navigation
+        function switchTab(tab) {
+            const mRoot = document.getElementById('appRoot');
+            if (mRoot) mRoot.dataset.mtab = tab === 'daily' ? 'log' : 'weeks';
+            const tabDaily = document.getElementById('tabDaily');
+            const tabWeekly = document.getElementById('tabWeekly');
+            const contentDaily = document.getElementById('contentDaily');
+            const contentWeekly = document.getElementById('contentWeekly');
+
+            if (tab === 'daily') {
+                tabDaily.className = "px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm";
+                tabWeekly.className = "px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900";
+                contentDaily.classList.remove('hidden');
+                contentWeekly.classList.add('hidden');
+            } else {
+                tabWeekly.className = "px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm";
+                tabDaily.className = "px-3 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900";
+                contentWeekly.classList.remove('hidden');
+                contentDaily.classList.add('hidden');
+                renderWeeklyBatches();
+            }
+        }
+
+        // Weekly Transfer Modal Controls
+        function openWeeklyTransferModal() {
+            if (!requireManager()) return;
+            const untransferred = appData.entries.filter(item => !item.transferred);
+            if (untransferred.length === 0) {
+                showToast('لا توجد مداخيل جديدة غير مرحلة للتحويل حالياً', 'error');
+                return;
+            }
+
+            const totalAmount = untransferred.reduce((sum, item) => sum + item.amount, 0);
+            
+            document.getElementById('modalUntransferredDays').innerText = `${untransferred.length} إدخال`;
+            document.getElementById('modalUntransferredAmount').innerText = formatCurrency(totalAmount);
+
+            document.getElementById('weeklyTransferModal').classList.remove('hidden');
+            document.getElementById('weeklyTransferModal').classList.add('flex');
+        }
+
+        function closeWeeklyTransferModal() {
+            document.getElementById('weeklyTransferModal').classList.remove('flex');
+            document.getElementById('weeklyTransferModal').classList.add('hidden');
+        }
+
+        function executeWeeklyTransfer() {
+            if (!requireManager()) return;
+            const untransferred = appData.entries.filter(item => !item.transferred);
+            if (untransferred.length === 0) return;
+
+            const totalAmount = untransferred.reduce((sum, item) => sum + item.amount, 0);
+            const seq = appData.weeklyBatches.map(x => parseInt(String(x.id).replace(/\D/g, ''), 10)).filter(n => isFinite(n) && n < 100000);
+            const batchId = 'WB-' + String((seq.length ? Math.max(...seq) : 0) + 1).padStart(3, '0');
+            
+            // Sort dates to find range
+            untransferred.sort((a, b) => new Date(a.date) - new Date(b.date));
+            const startDate = untransferred[0].date;
+            const endDate = untransferred[untransferred.length - 1].date;
+
+            const newBatch = {
+                id: batchId,
+                startDate,
+                endDate,
+                totalAmount,
+                entriesCount: untransferred.length,
+                entryIds: untransferred.map(i => i.id),
+                createdAt: new Date().toISOString()
+            };
+
+            // Mark entries as transferred
+            untransferred.forEach(item => {
+                item.transferred = true;
+            });
+
+            appData.weeklyBatches.unshift(newBatch);
+            saveToLocalStorage();
+            closeWeeklyTransferModal();
+            renderAll();
+            switchTab('weekly');
+            showToast('تم ترحيل مداخيل الأسبوع وإنشاء الدفعة بنجاح');
+        }
+
+        // Batch Details View Modal
+        function viewBatchDetails(batchId) {
+            const batch = appData.weeklyBatches.find(b => b.id === batchId);
+            if (!batch) return;
+
+            currentBatchId = batch.id;
+            undoArmed = false;
+            document.getElementById('undoBatchBtn').textContent = 'إلغاء هذه الدفعة';
+            document.getElementById('batchModalTitle').innerText = `دفعة أسبوعية: ${batch.id}`;
+            document.getElementById('batchModalSubtitle').innerText = `الفترة من ${formatDateDisplay(batch.startDate)} إلى ${formatDateDisplay(batch.endDate)} (${batch.entriesCount} إدخال)`;
+
+            const listContainer = document.getElementById('batchModalEntriesList');
+            listContainer.innerHTML = '';
+
+            const batchEntries = appData.entries.filter(e => batch.entryIds && batch.entryIds.includes(e.id));
+            
+            if (batchEntries.length === 0) {
+                listContainer.innerHTML = `<p class="text-sm text-slate-400 text-center py-6">لا توجد تفاصيل متاحة لهذه الدفعة.</p>`;
+            } else {
+                batchEntries.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = "flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-sm";
+                    div.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-slate-700 dark:text-slate-300"><i class="fa-regular fa-calendar-days text-emerald-500 ml-1.5"></i>${formatDateDisplay(item.date)}</span>
+                            <span class="text-xs text-slate-400 max-w-xs truncate">${esc(item.note) || 'بدون ملاحظة'}</span>
+                        </div>
+                        <span class="font-extrabold text-emerald-600 dark:text-emerald-400">${formatCurrency(item.amount)}</span>
+                    `;
+                    listContainer.appendChild(div);
+                });
+            }
+
+            document.getElementById('batchDetailsModal').classList.remove('hidden');
+            document.getElementById('batchDetailsModal').classList.add('flex');
+        }
+
+        function closeBatchDetailsModal() {
+            document.getElementById('batchDetailsModal').classList.remove('flex');
+            document.getElementById('batchDetailsModal').classList.add('hidden');
+        }
+
+        // PDF Report Modal & Generation Functions
+        function openReportModal() {
+            const batchSelect = document.getElementById('reportBatchSelect');
+            batchSelect.innerHTML = '';
+
+            if (appData.weeklyBatches.length === 0) {
+                batchSelect.innerHTML = `<option value="">لا توجد دفعات أسبوعية مرحلة حالياً</option>`;
+            } else {
+                appData.weeklyBatches.forEach(b => {
+                    const opt = document.createElement('option');
+                    opt.value = b.id;
+                    opt.innerText = `${b.id} (${formatDateDisplay(b.startDate)} إلى ${formatDateDisplay(b.endDate)}) - ${formatCurrency(b.totalAmount)}`;
+                    batchSelect.appendChild(opt);
+                });
+            }
+
+            // Set current month as default for monthly report
+            const today = new Date();
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            document.getElementById('reportMonthSelect').value = `${y}-${m}`;
+
+            toggleReportSelectors();
+            document.getElementById('reportModal').classList.remove('hidden');
+            document.getElementById('reportModal').classList.add('flex');
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').classList.remove('flex');
+            document.getElementById('reportModal').classList.add('hidden');
+        }
+
+        function toggleReportSelectors() {
+            const type = document.getElementById('reportType').value;
+            if (type === 'weekly') {
+                document.getElementById('weeklyReportSelectGroup').classList.remove('hidden');
+                document.getElementById('monthlyReportSelectGroup').classList.add('hidden');
+            } else {
+                document.getElementById('weeklyReportSelectGroup').classList.add('hidden');
+                document.getElementById('monthlyReportSelectGroup').classList.remove('hidden');
+            }
+        }
+
+        function generatePDF() {
+            const type = document.getElementById('reportType').value;
+            let reportEntries = [];
+            let subtitleText = '';
+
+            if (type === 'weekly') {
+                const batchId = document.getElementById('reportBatchSelect').value;
+                const batch = appData.weeklyBatches.find(b => b.id === batchId);
+                if (!batch) {
+                    showToast('يرجى اختيار دفعة أسبوعية صالحة', 'error');
+                    return;
+                }
+                reportEntries = appData.entries.filter(e => batch.entryIds && batch.entryIds.includes(e.id));
+                subtitleText = `تقرير أسبوعي للدفعة رقم (${batch.id}) - الفترة من ${formatDateDisplay(batch.startDate)} إلى ${formatDateDisplay(batch.endDate)}`;
+            } else {
+                const monthVal = document.getElementById('reportMonthSelect').value; // YYYY-MM
+                if (!monthVal) {
+                    showToast('يرجى تحديد الشهر والسنة', 'error');
+                    return;
+                }
+                reportEntries = appData.entries.filter(e => e.date && e.date.startsWith(monthVal));
+                
+                const [year, month] = monthVal.split('-');
+                const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+                const monthName = monthNames[parseInt(month, 10) - 1];
+                subtitleText = `تقرير شهري لمداخيل شهر ${monthName} ${year}`;
+            }
+
+            if (reportEntries.length === 0) {
+                showToast('لا توجد بيانات مسجلة للفترة المختارة', 'error');
+                return;
+            }
+
+            // Fill PDF Template
+            const totalAmount = reportEntries.reduce((sum, e) => sum + e.amount, 0);
+            const totalDays = reportEntries.length;
+            const avgAmount = totalDays > 0 ? totalAmount / totalDays : 0;
+
+            document.getElementById('pdfReportSubtitle').innerText = subtitleText;
+            document.getElementById('pdfReportGeneratedDate').innerText = formatDateDisplay(new Date().toISOString().split('T')[0]);
+            document.getElementById('pdfReportTotalAmount').innerText = formatCurrency(totalAmount);
+            document.getElementById('pdfReportTotalDays').innerText = `${totalDays} يوم`;
+            document.getElementById('pdfReportAvgAmount').innerText = formatCurrency(avgAmount);
+
+            const tbody = document.getElementById('pdfReportTableBody');
+            tbody.innerHTML = '';
+
+            reportEntries.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(entry => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-200";
+                tr.innerHTML = `
+                    <td class="py-2 px-4 border border-slate-300 font-bold">${formatDateDisplay(entry.date)}</td>
+                    <td class="py-2 px-4 border border-slate-300 font-bold text-emerald-700">${formatCurrency(entry.amount)}</td>
+                    <td class="py-2 px-4 border border-slate-300">${esc(entry.note) || 'بدون ملاحظة'}</td>
+                    <td class="py-2 px-4 border border-slate-300">${entry.transferred ? 'مترحلة' : 'غير مرحلة'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Generate PDF using html2pdf
+            const element = document.getElementById('pdfReportTemplate');
+            const opt = {
+                margin:       10,
+                filename:     `تقرير_مداخيل_${type}_${new Date().toISOString().split('T')[0]}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            showToast('جاري إنشاء ملف PDF...');
+            html2pdf().set(opt).from(element).save().then(() => {
+                closeReportModal();
+                showToast('تم تجهيز التقرير');
+            }).catch(() => showToast('تعذّر إنشاء ملف PDF', 'error'));
+        }
+
+        function mergeIncomingData(incomingData) {
+            if (!incomingData || !incomingData.entries) return;
+
+            let mergedCount = 0;
+            const existingEntryIds = new Set(appData.entries.map(e => e.id));
+
+            // Merge Entries seamlessly
+            incomingData.entries.map(sanitizeEntry).filter(Boolean).forEach(incEntry => {
+                if (!existingEntryIds.has(incEntry.id)) {
+                    appData.entries.push(incEntry);
+                    mergedCount++;
+                } else {
+                    // Update entry state if existing
+                    const existing = appData.entries.find(e => e.id === incEntry.id);
+                    if (existing && incEntry.transferred) {
+                        existing.transferred = true;
+                    }
+                }
+            });
+
+            // Merge Batches
+            const existingBatchIds = new Set(appData.weeklyBatches.map(b => b.id));
+            if (incomingData.weeklyBatches) {
+                incomingData.weeklyBatches.map(sanitizeBatch).filter(Boolean).forEach(incBatch => {
+                    if (!existingBatchIds.has(incBatch.id)) {
+                        appData.weeklyBatches.push(incBatch);
+                    }
+                });
+            }
+
+            saveToLocalStorage(false); // Don't echo infinitely
+            renderAll();
+            showToast(`تم الاستيراد: ${mergedCount} إدخالات جديدة.`);
+        }
+
+        // Render Functions
+        function renderAll() {
+            renderStats();
+            renderDailyEntries();
+            renderWeeklyBatches();
+            checkWeeklyReminder();
+        }
+
+        function renderStats() {
+            const totalIncome = appData.entries.reduce((sum, item) => sum + item.amount, 0);
+            const totalDays = new Set(appData.entries.map(e => e.date)).size;
+            const currentWeekIncome = appData.entries
+                .filter(item => !item.transferred)
+                .reduce((sum, item) => sum + item.amount, 0);
+            const batchesCount = appData.weeklyBatches.length;
+
+            document.getElementById('statTotalIncome').innerText = formatCurrency(totalIncome);
+            document.getElementById('statTotalDays').innerText = totalDays;
+            document.getElementById('statCurrentWeekIncome').innerText = formatCurrency(currentWeekIncome);
+            document.getElementById('statBatchesCount').innerText = batchesCount;
+            renderMobileExtras();
+        }
+
+        function renderDailyEntries() {
+            const tbody = document.getElementById('dailyEntriesTableBody');
+            const noEntries = document.getElementById('noDailyEntries');
+            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+            const filterStatus = document.getElementById('filterStatus').value;
+            const rawDate = document.getElementById('filterDate').value;
+            const dateFilterVal = dmyToIso(rawDate);
+            document.getElementById('clearFiltersBtn').classList.toggle('hidden', !(searchVal || rawDate.trim() || filterStatus !== 'all'));
+
+            tbody.innerHTML = '';
+
+            let filtered = appData.entries.filter(entry => {
+                const matchesDate = !dateFilterVal || entry.date === dateFilterVal;
+                const matchesSearch = !searchVal || (entry.note && entry.note.toLowerCase().includes(searchVal)) ||
+                                     (entry.date && (entry.date.includes(searchVal) || formatDateDisplay(entry.date).includes(searchVal) || isoToDmy(entry.date).includes(searchVal)));
+                
+                let matchesStatus = true;
+                if (filterStatus === 'untransferred') matchesStatus = !entry.transferred;
+                if (filterStatus === 'transferred') matchesStatus = entry.transferred;
+
+                return matchesDate && matchesSearch && matchesStatus;
+            });
+
+            document.getElementById('entriesCountBadge').innerText = `${filtered.length} إدخال · ${formatCurrency(filtered.reduce((s, e) => s + e.amount, 0))}`;
+
+            if (filtered.length === 0) {
+                noEntries.classList.remove('hidden');
+                return;
+            }
+
+            noEntries.classList.add('hidden');
+
+            filtered.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(entry => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition";
+                
+                const statusBadge = entry.transferred 
+                    ? `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-500"><i class="fa-solid fa-check text-emerald-500 ml-1"></i>مترحلة</span>`
+                    : `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400"><i class="fa-solid fa-clock ml-1"></i>غير مرحلة</span>`;
+
+                tr.innerHTML = `
+                    <td class="py-4 px-6 font-bold text-slate-900 dark:text-white whitespace-nowrap">${formatDateDisplay(entry.date)}</td>
+                    <td class="py-4 px-6 font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap">${formatCurrency(entry.amount)}</td>
+                    <td class="py-4 px-6 text-slate-500 dark:text-slate-400 max-w-xs truncate">${esc(entry.note) || '—'}</td>
+                    <td class="py-4 px-6 whitespace-nowrap">${statusBadge}</td>
+                    <td class="mgr-only py-4 px-6 text-center whitespace-nowrap">
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="openEditModal('${entry.id}')" title="تعديل الإدخال" class="p-2 rounded-xl text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800 transition">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="promptDelete('${entry.id}')" title="حذف الإدخال" class="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-slate-800 transition">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderWeeklyBatches() {
+            const tbody = document.getElementById('weeklyBatchesTableBody');
+            const noBatches = document.getElementById('noWeeklyBatches');
+
+            tbody.innerHTML = '';
+            document.getElementById('batchesCountBadge').innerText = `${appData.weeklyBatches.length} دفعة`;
+
+            if (appData.weeklyBatches.length === 0) {
+                noBatches.classList.remove('hidden');
+                return;
+            }
+
+            noBatches.classList.add('hidden');
+
+            appData.weeklyBatches.forEach(batch => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition";
+                
+                tr.innerHTML = `
+                    <td class="py-4 px-6 font-bold text-purple-600 dark:text-purple-400 whitespace-nowrap">${batch.id}</td>
+                    <td class="py-4 px-6 font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">${formatDateDisplay(batch.startDate)} إلى ${formatDateDisplay(batch.endDate)}</td>
+                    <td class="py-4 px-6 font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap">${batch.entriesCount} إدخال</td>
+                    <td class="py-4 px-6 font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap">${formatCurrency(batch.totalAmount)}</td>
+                    <td class="py-4 px-6 text-center whitespace-nowrap">
+                        <button onclick="viewBatchDetails('${batch.id}')" class="px-3.5 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-300 hover:bg-purple-100 font-bold text-xs transition inline-flex items-center gap-1.5">
+                            <i class="fa-solid fa-eye"></i> عرض التفاصيل
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Weekly Reminder Checks
+        function checkWeeklyReminder() {
+            if (reminderDismissed) return;
+
+            const banner = document.getElementById('weeklyReminderBanner');
+            const untransferred = appData.entries.filter(e => !e.transferred);
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 0 = Sun, 5 = Fri, 6 = Sat
+
+            // Show reminder strictly on Friday (dayOfWeek === 5) if there are untransferred entries
+            const isFriday = (dayOfWeek === 5);
+            
+            if (untransferred.length > 0 && isFriday) {
+                const totalPending = untransferred.reduce((s, e) => s + e.amount, 0);
+                document.getElementById('reminderBannerText').innerText = 
+                    `اليوم الجمعة (نهاية الأسبوع): لديك ${untransferred.length} مداخيل يومية غير مرحلة بمجموع (${formatCurrency(totalPending)}). يرجى تحويلها لدفعة أسبوعية لتنظيم حساباتك.`;
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
+        function dismissReminder() {
+            reminderDismissed = true;
+            document.getElementById('weeklyReminderBanner').classList.add('hidden');
+        }
+
+        // Formatting Helpers
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount) + ' د.ج';
+        }
+
+        function formatDateDisplay(dateString) {
+            if (!dateString) return '';
+            const [y, m, d] = dateString.split('-');
+            const months = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+            const monthName = months[parseInt(m, 10) - 1];
+            return `${parseInt(d, 10)} ${monthName} ${y}`;
+        }
+
+        // Backup & Restore
+        function exportData() {
+            if (!requireManager()) return;
+            const day = new Date().toISOString().split('T')[0];
+            downloadBlob(new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' }), `shop_income_data_${day}.json`);
+            showToast('تم تصدير نسخة احتياطية من البيانات');
+        }
+
+        function importData(event) {
+            if (!requireManager()) { event.target.value = ''; return; }
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed && (parsed.entries || parsed.weeklyBatches)) {
+                        mergeIncomingData(parsed);
+                    } else {
+                        showToast('تنسيق الملف غير صحيح', 'error');
+                    }
+                } catch (err) {
+                    showToast('خطأ أثناء قراءة الملف', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+    
+
+        // ---------------- Accounts and roles (Supabase Auth) ----------------
+        // manager: full control. observer: review + report only. pending: waits for the manager.
+        // The database enforces this with row level security; the screen only hides what the role cannot use.
+        function requireManager() {
+            if (authed && role === 'manager') return true;
+            showToast('هذه العملية للمدير فقط', 'error');
+            return false;
+        }
+
+        function applyRole() {
+            const root = document.getElementById('appRoot');
+            if (!root) return;
+            const isMgr = authed && role === 'manager';
+            root.dataset.role = isMgr ? 'manager' : 'observer';
+            if (!isMgr && root.dataset.mtab === 'add') root.dataset.mtab = 'home';
+            const badge = document.getElementById('roleBadge');
+            badge.textContent = isMgr ? 'وضع المدير' : 'وضع المراقب';
+            badge.className = isMgr
+                ? 'hidden sm:inline-flex items-center text-xs font-bold px-3 py-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                : 'hidden sm:inline-flex items-center text-xs font-bold px-3 py-2.5 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800';
+            setStorageBadge();
+        }
+
+        // ----- sign-in screen
+        const AUTH_VIEWS = ['Loading', 'Login', 'Signup', 'Pending', 'Recovery', 'Error'];
+        function setAuthMsg(text, ok) {
+            const el = document.getElementById('authMsg');
+            el.textContent = text || '';
+            el.className = 'text-sm font-semibold min-h-[1.25rem] ' + (ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400');
+        }
+        function showAuth(view, msg, ok) {
+            document.getElementById('authScreen').hidden = false;
+            document.getElementById('appRoot').hidden = true;
+            AUTH_VIEWS.forEach(v => { document.getElementById('authView' + v).classList.toggle('hidden', v.toLowerCase() !== String(view)); });
+            if (view === 'error') document.getElementById('authErrorText').textContent = msg || '';
+            setAuthMsg(view === 'error' ? '' : msg, ok);
+            const first = { login: 'loginEmail', signup: 'signupEmail', recovery: 'recNew' }[view];
+            if (first) setTimeout(() => { try { document.getElementById(first).focus(); } catch (e) {} }, 50);
+        }
+        function hideAuth() {
+            document.getElementById('authScreen').hidden = true;
+            document.getElementById('appRoot').hidden = false;
+        }
+        function authErrorText(err) {
+            const m = String((err && err.message) || '').toLowerCase();
+            if (m.includes('invalid login')) return 'البريد أو كلمة السر غير صحيحة.';
+            if (m.includes('email not confirmed')) return 'لم يُؤكَّد البريد بعد. افتح رسالة التأكيد المرسلة إليك.';
+            if (m.includes('already registered') || m.includes('already been registered')) return 'هذا البريد مسجّل مسبقًا. جرّب الدخول.';
+            if (m.includes('at least') || m.includes('weak')) return 'كلمة السر ضعيفة. استخدم 6 أحرف على الأقل.';
+            if (m.includes('rate limit') || m.includes('too many')) return 'محاولات كثيرة. انتظر قليلًا ثم أعد المحاولة.';
+            if (m.includes('valid email') || m.includes('invalid email')) return 'اكتب بريدًا إلكترونيًا صحيحًا.';
+            if (m.includes('failed to fetch') || m.includes('network')) return 'تعذّر الاتصال بالإنترنت.';
+            return 'حدث خطأ. حاول مرة أخرى.';
+        }
+
+        async function initAuth() {
+            if (!window.supabase || !CFG.SUPABASE_URL || !CFG.SUPABASE_KEY) {
+                showAuth('error', 'تعذّر تحميل مكتبة الاتصال أو ملف الإعدادات config.js. تحقق من الإنترنت وأعد المحاولة.');
+                return;
+            }
+            sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+            showAuth('loading');
+            sb.auth.onAuthStateChange((event, sess) => {
+                // do not await Supabase calls inside this callback
+                if (event === 'PASSWORD_RECOVERY') { recovering = true; session = sess; setTimeout(() => showAuth('recovery'), 0); return; }
+                if (event === 'SIGNED_OUT') { setTimeout(onSignedOut, 0); return; }
+                if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') { setTimeout(() => onSession(sess), 0); }
+            });
+        }
+
+        async function onSession(sess) {
+            if (recovering) return;
+            if (!sess) { onSignedOut(); return; }
+            if (authed && session && session.user.id === sess.user.id) { session = sess; return; }
+            if (busyUser === sess.user.id) return;
+            busyUser = sess.user.id;
+            session = sess;
+            showAuth('loading');
+            try {
+                const { data, error } = await sb.from('profiles').select('role').eq('id', sess.user.id).maybeSingle();
+                if (error) { showAuth('error', 'تعذّر قراءة صلاحية حسابك. تحقق من الاتصال ثم أعد المحاولة.'); return; }
+                const r = data ? data.role : 'pending';
+                if (r === 'pending') { authed = false; role = 'observer'; showAuth('pending'); return; }
+                role = r === 'manager' ? 'manager' : 'observer';
+                authed = true;
+                hideAuth();
+                applyRole();
+                await loadData();
+                startPolling();
+            } finally {
+                busyUser = null;
+            }
+        }
+        function onSignedOut() {
+            stopPolling();
+            authed = false; session = null; role = 'observer'; busyUser = null; recovering = false;
+            appData = { entries: [], weeklyBatches: [] };
+            savedSnap = { entries: new Map(), batches: new Map() };
+            renderAll();
+            applyRole();
+            showAuth('login');
+        }
+        async function recheckAccess() {
+            if (!session) { showAuth('login'); return; }
+            authed = false; busyUser = null;
+            await onSession(session);
+        }
+        async function doLogout() {
+            if (!sb) return;
+            await sb.auth.signOut();
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            setAuthMsg('');
+            const btn = document.getElementById('loginSubmit');
+            btn.disabled = true;
+            const { error } = await sb.auth.signInWithPassword({ email: document.getElementById('loginEmail').value.trim(), password: document.getElementById('loginPassword').value });
+            btn.disabled = false;
+            if (error) setAuthMsg(authErrorText(error));
+            else document.getElementById('loginPassword').value = '';
+        }
+        async function handleSignup(e) {
+            e.preventDefault();
+            setAuthMsg('');
+            const email = document.getElementById('signupEmail').value.trim();
+            const pw = document.getElementById('signupPassword').value;
+            if (pw.length < 6) { setAuthMsg('كلمة السر 6 أحرف على الأقل.'); return; }
+            if (pw !== document.getElementById('signupConfirm').value) { setAuthMsg('كلمتا السر غير متطابقتين.'); return; }
+            const btn = document.getElementById('signupSubmit');
+            btn.disabled = true;
+            const { data, error } = await sb.auth.signUp({ email, password: pw });
+            btn.disabled = false;
+            if (error) { setAuthMsg(authErrorText(error)); return; }
+            if (!data.session) {
+                document.getElementById('loginEmail').value = email;
+                showAuth('login', 'تم إنشاء الحساب. أكّد بريدك من الرسالة المرسلة إليك ثم سجّل الدخول.', true);
+            }
+        }
+        async function handleForgot() {
+            const email = document.getElementById('loginEmail').value.trim();
+            if (!email) { setAuthMsg('اكتب بريدك أولًا ثم اضغط «نسيت كلمة السر».'); return; }
+            const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+            if (error) setAuthMsg(authErrorText(error));
+            else setAuthMsg('أرسلنا رابط إعادة تعيين كلمة السر إلى بريدك.', true);
+        }
+        async function handleRecovery(e) {
+            e.preventDefault();
+            setAuthMsg('');
+            const pw = document.getElementById('recNew').value;
+            if (pw.length < 6) { setAuthMsg('كلمة السر 6 أحرف على الأقل.'); return; }
+            if (pw !== document.getElementById('recConfirm').value) { setAuthMsg('كلمتا السر غير متطابقتين.'); return; }
+            const btn = document.getElementById('recSubmit');
+            btn.disabled = true;
+            const { error } = await sb.auth.updateUser({ password: pw });
+            btn.disabled = false;
+            if (error) { setAuthMsg(authErrorText(error)); return; }
+            recovering = false;
+            try { history.replaceState(null, '', location.pathname); } catch (err) {}
+            const { data } = await sb.auth.getSession();
+            authed = false; busyUser = null;
+            await onSession(data.session);
+        }
+
+        // ----- change password (signed in)
+        function openPwModal() {
+            ['pwNew', 'pwConfirm'].forEach(id => { document.getElementById(id).value = ''; });
+            document.getElementById('pwErr').textContent = '';
+            document.getElementById('pwModal').classList.remove('hidden');
+            document.getElementById('pwModal').classList.add('flex');
+            setTimeout(() => { try { document.getElementById('pwNew').focus(); } catch (e) {} }, 50);
+        }
+        function closePwModal() {
+            document.getElementById('pwModal').classList.remove('flex');
+            document.getElementById('pwModal').classList.add('hidden');
+        }
+        async function handlePwSubmit(e) {
+            e.preventDefault();
+            const err = document.getElementById('pwErr');
+            err.textContent = '';
+            const pw = document.getElementById('pwNew').value;
+            if (pw.length < 6) { err.textContent = 'كلمة السر 6 أحرف على الأقل.'; return; }
+            if (pw !== document.getElementById('pwConfirm').value) { err.textContent = 'كلمتا السر غير متطابقتين.'; return; }
+            const btn = document.getElementById('pwSubmit');
+            btn.disabled = true;
+            const { error } = await sb.auth.updateUser({ password: pw });
+            btn.disabled = false;
+            if (error) { err.textContent = authErrorText(error); return; }
+            closePwModal();
+            showToast('تم تغيير كلمة السر');
+        }
+
+        // ----- users (manager)
+        const ROLE_LABELS = { manager: 'مدير', observer: 'مراقب', pending: 'بانتظار الموافقة' };
+        async function refreshPendingBadge() {
+            if (!(authed && role === 'manager')) return;
+            try {
+                const { count } = await sb.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'pending');
+                const b = document.getElementById('usersBadge');
+                b.textContent = count || 0;
+                b.style.display = count ? 'flex' : 'none';
+            } catch (e) {}
+        }
+        async function openUsersModal() {
+            if (!requireManager()) return;
+            document.getElementById('usersModal').classList.remove('hidden');
+            document.getElementById('usersModal').classList.add('flex');
+            await renderUsers();
+        }
+        function closeUsersModal() {
+            document.getElementById('usersModal').classList.remove('flex');
+            document.getElementById('usersModal').classList.add('hidden');
+        }
+        async function renderUsers() {
+            const box = document.getElementById('usersList');
+            box.innerHTML = '<p class="py-6 text-center text-sm text-slate-400 font-semibold">جارٍ التحميل...</p>';
+            const { data, error } = await sb.from('profiles').select('id,email,role,created_at').order('created_at');
+            if (error) { box.innerHTML = '<p class="py-6 text-center text-sm text-red-500 font-semibold">تعذّر تحميل المستخدمين.</p>'; return; }
+            const me = session ? session.user.id : '';
+            const rank = { pending: 0, manager: 1, observer: 2 };
+            data.sort((a, b) => (rank[a.role] - rank[b.role]) || String(a.created_at).localeCompare(String(b.created_at)));
+            box.innerHTML = data.map(u => (
+                '<div class="py-3 flex items-center justify-between gap-3">' +
+                    '<div class="min-w-0"><div class="text-sm font-bold text-slate-800 dark:text-slate-100 truncate" dir="ltr" style="text-align:right">' + esc(u.email) + '</div>' +
+                    '<div class="text-xs text-slate-500 dark:text-slate-400">' + (u.id === me ? 'أنت' : formatDateDisplay(String(u.created_at).slice(0, 10))) + '</div></div>' +
+                    '<select data-uid="' + esc(u.id) + '" onchange="changeUserRole(this)" ' + (u.id === me ? 'disabled ' : '') + 'class="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-semibold">' +
+                    Object.keys(ROLE_LABELS).map(r => '<option value="' + r + '"' + (u.role === r ? ' selected' : '') + '>' + ROLE_LABELS[r] + '</option>').join('') +
+                    '</select></div>'
+            )).join('') || '<p class="py-6 text-center text-sm text-slate-400 font-semibold">لا يوجد مستخدمون.</p>';
+        }
+        async function changeUserRole(sel) {
+            if (!requireManager()) return;
+            const { data, error } = await sb.from('profiles').update({ role: sel.value }).eq('id', sel.dataset.uid).select('id');
+            if (error || !data || !data.length) {
+                showToast(error && String(error.message).includes('آخر مدير') ? 'لا يمكن إزالة آخر مدير' : 'تعذّر تغيير الصلاحية', 'error');
+                await renderUsers();
+                return;
+            }
+            showToast('تم تحديث الصلاحية');
+            refreshPendingBadge();
+        }
+
+        function downloadBlob(blob, name) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = name;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+        }
+
+        // ---------------- Date fields: dd_mm_yy ----------------
+        function toLatinDigits(v) {
+            const map = { '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4', '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9', '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4', '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9' };
+            return String(v == null ? '' : v).replace(/[٠-٩۰-۹]/g, c => map[c]);
+        }
+        function isoToDmy(iso) {
+            if (!DATE_RE.test(String(iso || ''))) return '';
+            return iso.slice(8, 10) + '_' + iso.slice(5, 7) + '_' + iso.slice(2, 4);
+        }
+        function dmyToIso(v) {
+            const m = toLatinDigits(v).trim().match(/^(\d{1,2})[_\/\-.\s](\d{1,2})[_\/\-.\s](\d{2}|\d{4})$/);
+            if (!m) return '';
+            const d = parseInt(m[1], 10), mo = parseInt(m[2], 10);
+            let y = parseInt(m[3], 10);
+            if (y < 100) y += 2000;
+            const dt = new Date(y, mo - 1, d);
+            if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return '';
+            return y + '-' + String(mo).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        }
+        // typing 171026 becomes 17_10_26 (capture phase so the field is formatted before other handlers read it)
+        document.addEventListener('input', e => {
+            const t = e.target;
+            if (!t || !t.matches || !t.matches('input[data-datefmt]')) return;
+            const d = toLatinDigits(t.value).replace(/\D/g, '').slice(0, 6);
+            let out = d;
+            if (d.length > 4) out = d.slice(0, 2) + '_' + d.slice(2, 4) + '_' + d.slice(4);
+            else if (d.length > 2) out = d.slice(0, 2) + '_' + d.slice(2);
+            if (t.value !== out) t.value = out;
+        }, true);
+
+
+        // ---------------- Phone layout helpers ----------------
+        function setMobileTab(name) {
+            const root = document.getElementById('appRoot');
+            if (!root) return;
+            if (name === 'add' && role !== 'manager') { showToast('الإضافة للمدير فقط', 'error'); return; }
+            if (name === 'log') switchTab('daily');
+            else if (name === 'weeks') switchTab('weekly');
+            else root.dataset.mtab = name;
+            window.scrollTo(0, 0);
+            if (name === 'add') setTimeout(() => { try { document.getElementById('entryAmount').focus(); } catch (e) {} }, 60);
+        }
+
+        function localTodayIso() {
+            const d = new Date();
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+
+        function renderMobileExtras() {
+            const todayIso = localTodayIso();
+            const todaySum = appData.entries.filter(e => e.date === todayIso).reduce((s, e) => s + e.amount, 0);
+            const strip = document.getElementById('mTodayTotal');
+            if (strip) strip.textContent = formatCurrency(todaySum);
+
+            const list = document.getElementById('mLatestList');
+            if (!list) return;
+            const latest = appData.entries.slice()
+                .sort((a, b) => (b.date.localeCompare(a.date)) || String(b.createdAt).localeCompare(String(a.createdAt)))
+                .slice(0, 5);
+            if (!latest.length) {
+                list.innerHTML = '<p class="px-4 py-6 text-center text-sm text-slate-400 font-semibold">لا توجد إدخالات بعد.</p>';
+                return;
+            }
+            list.innerHTML = latest.map(e => (
+                '<div class="px-4 py-3 flex items-center justify-between gap-3">' +
+                    '<div class="min-w-0">' +
+                        '<div class="text-sm font-bold text-slate-800 dark:text-slate-100">' + formatDateDisplay(e.date) + '</div>' +
+                        '<div class="text-xs text-slate-500 dark:text-slate-400 truncate">' + (esc(e.note) || 'بدون ملاحظة') + '</div>' +
+                    '</div>' +
+                    '<div class="text-sm font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap">' + formatCurrency(e.amount) + '</div>' +
+                '</div>'
+            )).join('');
+        }
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp);
+        else bootApp();
+    </script>
+
+</div>
+
+<!-- Sign-in screen -->
+<div id="authScreen" dir="rtl" lang="ar" class="fixed inset-0 z-[70] overflow-y-auto bg-gradient-to-br from-slate-50 via-emerald-50/40 to-teal-100/50 dark:from-slate-950 dark:via-slate-900 dark:to-emerald-950/30 text-slate-800 dark:text-slate-100">
+    <div class="min-h-full flex items-center justify-center p-4" style="padding-top:max(1rem, env(safe-area-inset-top, 0px)); padding-bottom:max(1rem, env(safe-area-inset-bottom, 0px));">
+        <div class="glass-card w-full max-w-md rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xl p-6 sm:p-8 space-y-5">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 flex-shrink-0"><i class="fa-solid fa-cash-register text-2xl"></i></div>
+                <div>
+                    <h1 class="text-xl font-black bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">مداخيل المحل</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">سجّل الدخول للمتابعة</p>
+                </div>
+            </div>
+
+            <div id="authViewLoading" class="py-8 text-center text-sm font-semibold text-slate-500 dark:text-slate-400"><i class="fa-solid fa-spinner animate-spin ml-1"></i> جارٍ التحميل...</div>
+
+            <form id="authViewLogin" class="hidden space-y-4" onsubmit="handleLogin(event)">
+                <div>
+                    <label for="loginEmail" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">البريد الإلكتروني</label>
+                    <input type="email" id="loginEmail" autocomplete="username" dir="ltr" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                </div>
+                <div>
+                    <label for="loginPassword" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">كلمة السر</label>
+                    <input type="password" id="loginPassword" autocomplete="current-password" dir="ltr" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                </div>
+                <button type="submit" id="loginSubmit" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold shadow-lg shadow-emerald-500/25 transition">دخول</button>
+                <div class="flex items-center justify-between gap-3 text-xs font-bold">
+                    <button type="button" onclick="handleForgot()" class="text-slate-500 dark:text-slate-400 underline hover:text-slate-700 dark:hover:text-slate-200">نسيت كلمة السر؟</button>
+                    <button type="button" onclick="showAuth('signup')" class="text-emerald-600 dark:text-emerald-400 hover:underline">إنشاء حساب جديد</button>
+                </div>
+            </form>
+
+            <form id="authViewSignup" class="hidden space-y-4" onsubmit="handleSignup(event)">
+                <div>
+                    <label for="signupEmail" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">البريد الإلكتروني</label>
+                    <input type="email" id="signupEmail" autocomplete="username" dir="ltr" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                </div>
+                <div>
+                    <label for="signupPassword" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">كلمة السر (6 أحرف على الأقل)</label>
+                    <input type="password" id="signupPassword" autocomplete="new-password" dir="ltr" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                </div>
+                <div>
+                    <label for="signupConfirm" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">أعد كتابتها</label>
+                    <input type="password" id="signupConfirm" autocomplete="new-password" dir="ltr" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                </div>
+                <button type="submit" id="signupSubmit" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold shadow-lg shadow-emerald-500/25 transition">إنشاء الحساب</button>
+                <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">أول حساب يُنشأ يصبح مدير المحل. أي حساب بعده ينتظر موافقة المدير قبل أن يرى شيئًا.</p>
+                <button type="button" onclick="showAuth('login')" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline">لديّ حساب، أريد الدخول</button>
+            </form>
+
+            <div id="authViewPending" class="hidden space-y-4 text-center">
+                <div class="w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-950/70 text-amber-600 dark:text-amber-400 flex items-center justify-center text-2xl mx-auto"><i class="fa-solid fa-hourglass-half"></i></div>
+                <h2 class="text-lg font-black">حسابك بانتظار الموافقة</h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">طلب المدير أن يوافق على حسابك. بعد موافقته اضغط «تحقق مرة أخرى».</p>
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="recheckAccess()" class="flex-1 py-3 px-5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold transition">تحقق مرة أخرى</button>
+                    <button type="button" onclick="doLogout()" class="py-3 px-5 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition">خروج</button>
+                </div>
+            </div>
+
+            <form id="authViewRecovery" class="hidden space-y-4" onsubmit="handleRecovery(event)">
+                <h2 class="text-lg font-black">اختر كلمة سر جديدة</h2>
+                <div>
+                    <label for="recNew" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">كلمة السر الجديدة (6 أحرف على الأقل)</label>
+                    <input type="password" id="recNew" autocomplete="new-password" dir="ltr" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                </div>
+                <div>
+                    <label for="recConfirm" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">أعد كتابتها</label>
+                    <input type="password" id="recConfirm" autocomplete="new-password" dir="ltr" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                </div>
+                <button type="submit" id="recSubmit" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold transition">حفظ ومتابعة</button>
+            </form>
+
+            <div id="authViewError" class="hidden space-y-4 text-center">
+                <div class="w-14 h-14 rounded-full bg-red-100 dark:bg-red-950/70 text-red-600 dark:text-red-400 flex items-center justify-center text-2xl mx-auto"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <p id="authErrorText" class="text-sm font-semibold text-slate-700 dark:text-slate-200 leading-relaxed"></p>
+                <button type="button" onclick="location.reload()" class="py-3 px-6 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition">إعادة المحاولة</button>
+            </div>
+
+            <p id="authMsg" role="alert" class="text-sm font-semibold min-h-[1.25rem]"></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
