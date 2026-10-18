@@ -177,6 +177,10 @@
                     <i class="fa-solid fa-user-lock text-lg"></i>
                     <span class="hidden md:inline">كلمة السر</span>
                 </button>
+                <button id="aboutBtn" onclick="openAbout()" title="حول التطبيق" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700 transition flex items-center gap-2 font-bold text-xs">
+                    <i class="fa-solid fa-circle-info text-lg"></i>
+                    <span class="hidden lg:inline">حول التطبيق</span>
+                </button>
                 <button id="authBtn" onclick="onAuthButton()" title="دخول المدير" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-slate-700 transition flex items-center gap-2 font-bold text-xs">
                     <i class="fa-solid fa-right-from-bracket text-lg"></i>
                     <span id="authBtnText" class="hidden sm:inline">دخول المدير</span>
@@ -500,6 +504,10 @@
             </div>
         </div>
     </main>
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-28 md:pb-8 text-center text-xs text-slate-500 dark:text-slate-400">
+        <button type="button" onclick="openAbout()" class="font-bold underline hover:text-emerald-600 dark:hover:text-emerald-400">حول التطبيق</button>
+        <span class="mx-1">·</span> صنعه ياسر بوخشم في خاطر مختار
+    </footer>
 
     <!-- Phone bottom navigation -->
     <nav id="mobileNav" class="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur border-t border-slate-200 dark:border-slate-800 flex items-stretch gap-1 px-2 pt-1" style="padding-bottom: calc(.25rem + env(safe-area-inset-bottom, 0px));" aria-label="التنقل">
@@ -510,6 +518,31 @@
     </nav>
 
     <!-- Change password (any signed-in user) -->
+    <div id="aboutModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4" onclick="if (event.target === this) closeAbout()">
+        <div class="glass-card bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-start justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center gap-3">
+                    <img src="icons/icon-192.png" alt="" class="w-12 h-12 rounded-2xl shadow">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white">مداخيل المحل</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">حول التطبيق</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeAbout()" aria-label="إغلاق" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <p class="text-sm leading-7 text-slate-700 dark:text-slate-300">تطبيق لتسجيل مداخيل المحل اليومية مع المجموع، وتحويل مداخيل الأسبوع إلى دفعة أسبوعية، مع ملاحظة لكل إدخال وسجل كامل يمكن البحث فيه بالتاريخ، ويعمل على الهاتف والحاسوب مع وضع ليلي.</p>
+            <ul class="text-sm text-slate-700 dark:text-slate-300 space-y-2">
+                <li><i class="fa-solid fa-user-shield text-emerald-500 ml-2"></i><b>المدير:</b> تحكم كامل بكلمة سر.</li>
+                <li><i class="fa-solid fa-eye text-amber-500 ml-2"></i><b>المراقب:</b> مراجعة وطباعة التقرير فقط.</li>
+                <li><i class="fa-solid fa-rotate text-sky-500 ml-2"></i>تُزامَن البيانات بين الأجهزة تلقائيًا.</li>
+            </ul>
+            <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-4 text-center">
+                <div class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">المصمم والمطوّر</div>
+                <div class="text-base font-black text-slate-900 dark:text-white">صنعه ياسر بوخشم في خاطر مختار</div>
+            </div>
+        </div>
+    </div>
+
     <div id="pwModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
         <div class="glass-card bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5">
             <div class="flex items-start justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
@@ -1872,6 +1905,9 @@
             document.getElementById('pwModal').classList.add('flex');
             setTimeout(() => { try { document.getElementById('pwNew').focus(); } catch (e) {} }, 50);
         }
+        function openAbout() { const m = document.getElementById('aboutModal'); m.classList.remove('hidden'); m.classList.add('flex'); }
+        function closeAbout() { const m = document.getElementById('aboutModal'); m.classList.remove('flex'); m.classList.add('hidden'); }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAbout(); });
         function closePwModal() {
             document.getElementById('pwModal').classList.remove('flex');
             document.getElementById('pwModal').classList.add('hidden');
