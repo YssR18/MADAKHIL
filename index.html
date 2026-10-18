@@ -1704,7 +1704,21 @@
             el.textContent = text || '';
             el.className = 'text-sm font-semibold min-h-[1.25rem] ' + (ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400');
         }
+        let managerExists = null;
+        async function checkManagerExists() {
+            try {
+                const { data, error } = await sb.rpc('manager_exists');
+                if (!error) managerExists = !!data;
+            } catch (e) {}
+            const l = document.getElementById('signupLink');
+            if (l) l.classList.toggle('hidden', managerExists !== false);
+        }
+        function clearAuthFields() {
+            ['loginEmail', 'loginPassword', 'signupEmail', 'signupPassword', 'signupConfirm', 'recNew'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        }
         function showAuth(view, msg, ok) {
+            if (view === 'signup' && managerExists === true) { view = 'login'; msg = 'التسجيل مغلق: يوجد مدير بالفعل.'; }
+            if (view === 'login' || view === 'signup') { if (!msg) clearAuthFields(); checkManagerExists(); }
             document.getElementById('authScreen').hidden = false;
             document.getElementById('appRoot').hidden = true;
             AUTH_VIEWS.forEach(v => { document.getElementById('authView' + v).classList.toggle('hidden', v.toLowerCase() !== String(view)); });
@@ -2038,14 +2052,14 @@
                 <button type="submit" id="loginSubmit" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold shadow-lg shadow-emerald-500/25 transition">دخول</button>
                 <div class="flex items-center justify-between gap-3 text-xs font-bold">
                     <button type="button" onclick="hideAuth()" class="text-slate-500 dark:text-slate-400 hover:underline">رجوع للعرض</button>
-                    <button type="button" onclick="showAuth('signup')" class="text-emerald-600 dark:text-emerald-400 hover:underline">إنشاء حساب المدير</button>
+                    <button type="button" id="signupLink" onclick="showAuth('signup')" class="hidden text-emerald-600 dark:text-emerald-400 hover:underline">إنشاء حساب المدير</button>
                 </div>
             </form>
 
             <form id="authViewSignup" class="hidden space-y-4" onsubmit="handleSignup(event)">
                 <div>
                     <label for="signupEmail" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">اسم المستخدم</label>
-                    <input type="text" id="signupEmail" autocomplete="username" autocapitalize="none" spellcheck="false" dir="ltr" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
+                    <input type="text" id="signupEmail" autocomplete="off" autocapitalize="none" spellcheck="false" dir="ltr" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition">
                 </div>
                 <div>
                     <label for="signupPassword" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">كلمة السر (6 أحرف على الأقل)</label>

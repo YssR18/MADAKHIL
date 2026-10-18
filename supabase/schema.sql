@@ -146,3 +146,10 @@ begin
 end
 $$;
 revoke all on function public.handle_new_user() from public, anon, authenticated;
+
+-- هل يوجد مدير؟ (تُستعمل لإخفاء «إنشاء حساب المدير» بعد إنشائه)
+create or replace function public.manager_exists()
+returns boolean language sql stable security definer set search_path = public
+as $$ select exists (select 1 from public.profiles where role = 'manager') $$;
+revoke all on function public.manager_exists() from public;
+grant execute on function public.manager_exists() to anon, authenticated;
