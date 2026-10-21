@@ -153,3 +153,26 @@ returns boolean language sql stable security definer set search_path = public
 as $$ select exists (select 1 from public.profiles where role = 'manager') $$;
 revoke all on function public.manager_exists() from public;
 grant execute on function public.manager_exists() to anon, authenticated;
+
+-- ===== المصاريف =====
+create table public.expenses (
+  id text primary key check (id ~ '^[A-Za-z0-9_-]{1,60}$'),
+  expense_date date not null,
+  amount numeric not null check (amount > 0),
+  category text not null default '' check (char_length(category) <= 60),
+  note text not null default '' check (char_length(note) <= 500),
+  created_at timestamptz not null default now()
+);
+alter table public.expenses enable row level security;
+revoke all on public.expenses from anon, authenticated;
+grant select on public.expenses to anon;
+grant select, insert, update, delete on public.expenses to authenticated;
+create policy expenses_select_anon on public.expenses for select to anon using (true);
+create policy expenses_select on public.expenses for select to authenticated
+  using ((select public.app_role()) in ('manager', 'observer'));
+create policy expenses_insert on public.expenses for insert to authenticated
+  with check ((select public.app_role()) = 'manager');
+create policy expenses_update on public.expenses for update to authenticated
+  using ((select public.app_role()) = 'manager') with check ((select public.app_role()) = 'manager');
+create policy expenses_delete on public.expenses for delete to authenticated
+  using ((select public.app_role()) = 'manager');

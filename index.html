@@ -82,6 +82,14 @@
             #appRoot[data-mtab="log"] .ms-home, #appRoot[data-mtab="log"] .ms-add, #appRoot[data-mtab="log"] .ms-weeks { display: none; }
             #appRoot[data-mtab="weeks"] .ms-home, #appRoot[data-mtab="weeks"] .ms-add, #appRoot[data-mtab="weeks"] .ms-log { display: none; }
 
+            #appRoot:not([data-mtab="exp"]) .ms-exp { display: none; }
+            #appRoot[data-mtab="exp"] .ms-home, #appRoot[data-mtab="exp"] .ms-add, #appRoot[data-mtab="exp"] .ms-log, #appRoot[data-mtab="exp"] .ms-weeks { display: none; }
+            #appRoot table.m-expenses tr { grid-template-areas: "d a" "c c" "n x"; }
+            #appRoot table.m-expenses td:nth-child(1) { grid-area: d; }
+            #appRoot table.m-expenses td:nth-child(2) { grid-area: a; justify-self: end; font-size: 1.05rem; }
+            #appRoot table.m-expenses td:nth-child(3) { grid-area: c; }
+            #appRoot table.m-expenses td:nth-child(4) { grid-area: n; font-size: .8rem; }
+            #appRoot table.m-expenses td:nth-child(5) { grid-area: x; justify-self: end; }
             #appRoot .m-hide { display: none; }
             #appRoot[data-role="observer"] .m-ctl { display: none; }
 
@@ -136,9 +144,9 @@
         html.dark #mobileNav .mnav-btn { color: #94a3b8; }
         #mobileNav .mnav-btn i { font-size: 1.15rem; }
         #appRoot[data-mtab="home"] .mnav-home, #appRoot[data-mtab="add"] .mnav-add,
-        #appRoot[data-mtab="log"] .mnav-log, #appRoot[data-mtab="weeks"] .mnav-weeks { color: #059669; background: rgba(16, 185, 129, .13); }
+        #appRoot[data-mtab="log"] .mnav-log, #appRoot[data-mtab="weeks"] .mnav-weeks, #appRoot[data-mtab="exp"] .mnav-exp { color: #059669; background: rgba(16, 185, 129, .13); }
         html.dark #appRoot[data-mtab="home"] .mnav-home, html.dark #appRoot[data-mtab="add"] .mnav-add,
-        html.dark #appRoot[data-mtab="log"] .mnav-log, html.dark #appRoot[data-mtab="weeks"] .mnav-weeks { color: #34d399; background: rgba(52, 211, 153, .14); }
+        html.dark #appRoot[data-mtab="log"] .mnav-log, html.dark #appRoot[data-mtab="weeks"] .mnav-weeks, html.dark #appRoot[data-mtab="exp"] .mnav-exp { color: #34d399; background: rgba(52, 211, 153, .14); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
@@ -503,6 +511,62 @@
 
             </div>
         </div>
+
+        <!-- ================= Expenses ================= -->
+        <section id="expensesSection" class="ms-exp space-y-6 mt-10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center"><i class="fa-solid fa-receipt"></i></div>
+                <h2 class="text-xl font-black text-slate-900 dark:text-white">المصاريف</h2>
+            </div>
+
+            <div class="m-stats grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="glass-card p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none"><div class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">إجمالي المصاريف</div><div id="statTotalExpenses" class="text-2xl font-black text-rose-600 dark:text-rose-400">0.00 د.ج</div></div>
+                <div class="glass-card p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none"><div class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">مصاريف هذا الشهر</div><div id="statMonthExpenses" class="text-2xl font-black text-slate-900 dark:text-white">0.00 د.ج</div></div>
+                <div class="glass-card p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none"><div class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">الصافي (مداخيل − مصاريف)</div><div id="statNet" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">0.00 د.ج</div></div>
+                <div class="glass-card p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none"><div class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-2">عدد المصاريف</div><div id="statExpCount" class="text-2xl font-black text-slate-900 dark:text-white">0</div></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <div class="mgr-only lg:col-span-1 glass-card p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none">
+                    <h3 class="text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-white pb-4 mb-5 border-b border-slate-100 dark:border-slate-800"><i class="fa-solid fa-circle-plus text-rose-500"></i> إضافة مصروف</h3>
+                    <form id="expenseForm" onsubmit="handleExpenseSubmit(event)" class="space-y-4">
+                        <div><label for="expDate" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">التاريخ (يوم_شهر_سنة)</label>
+                            <input type="text" id="expDate" data-datefmt inputmode="numeric" maxlength="8" dir="ltr" placeholder="dd_mm_yy" autocomplete="off" style="text-align:right" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm transition"></div>
+                        <div><label for="expAmount" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">المبلغ (د.ج)</label>
+                            <input type="number" id="expAmount" min="0.01" step="0.01" inputmode="decimal" dir="ltr" required placeholder="0.00" class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm transition"></div>
+                        <div><label for="expCategory" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">التصنيف</label>
+                            <input type="text" id="expCategory" list="expCategories" maxlength="60" autocomplete="off" placeholder="مثال: إيجار، بضاعة..." class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm transition">
+                            <datalist id="expCategories"><option value="إيجار"><option value="رواتب"><option value="بضاعة"><option value="كهرباء وماء"><option value="نقل"><option value="صيانة"><option value="أخرى"></datalist></div>
+                        <div><label for="expNote" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">ملاحظة (اختياري)</label>
+                            <textarea id="expNote" rows="2" maxlength="500" class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm transition resize-none" placeholder="تفاصيل المصروف..."></textarea></div>
+                        <button type="submit" class="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 text-white font-bold shadow-lg shadow-rose-500/25 transition"><i class="fa-solid fa-plus ml-1"></i> حفظ المصروف</button>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-2 space-y-4 min-w-0 workspace-exp">
+                    <div class="glass-card p-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-md flex flex-col sm:flex-row items-center gap-3">
+                        <input type="text" id="expSearch" oninput="renderExpenses()" placeholder="بحث في التصنيف أو الملاحظة..." class="flex-1 w-full px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm transition">
+                        <input type="text" id="expFilterDate" data-datefmt inputmode="numeric" maxlength="8" dir="ltr" placeholder="dd_mm_yy" autocomplete="off" style="text-align:right" oninput="renderExpenses()" title="بحث بالتاريخ (dd_mm_yy)" class="w-full sm:w-36 px-4 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm transition">
+                    </div>
+                    <div id="expCatChips" class="flex flex-wrap gap-2"></div>
+                    <div class="glass-card rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xl overflow-hidden">
+                        <div class="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <span class="font-bold text-slate-900 dark:text-white">سجل المصاريف</span>
+                            <span id="expCountBadge" class="text-xs font-bold text-slate-500 dark:text-slate-400"></span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="m-cards m-expenses w-full text-right text-sm">
+                                <thead class="bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 text-xs font-bold">
+                                    <tr><th class="py-3 px-6">التاريخ</th><th class="py-3 px-6">المبلغ</th><th class="py-3 px-6">التصنيف</th><th class="py-3 px-6">الملاحظة</th><th class="mgr-only py-3 px-6 text-center">إجراءات</th></tr>
+                                </thead>
+                                <tbody id="expTableBody" class="divide-y divide-slate-100 dark:divide-slate-800 font-medium"></tbody>
+                            </table>
+                        </div>
+                        <div id="noExpenses" class="hidden py-14 text-center text-slate-400"><i class="fa-solid fa-receipt text-4xl mb-3 opacity-40"></i><p class="font-semibold">لا توجد مصاريف مسجلة أو مطابقة للبحث.</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
     <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-28 md:pb-8 text-center text-xs text-slate-500 dark:text-slate-400">
         <button type="button" onclick="openAbout()" class="font-bold underline hover:text-emerald-600 dark:hover:text-emerald-400">حول التطبيق</button>
@@ -515,9 +579,28 @@
         <button type="button" class="mnav-btn mnav-add mgr-only" onclick="setMobileTab('add')"><i class="fa-solid fa-circle-plus"></i><span>إضافة</span></button>
         <button type="button" class="mnav-btn mnav-log" onclick="setMobileTab('log')"><i class="fa-solid fa-list-check"></i><span>السجل</span></button>
         <button type="button" class="mnav-btn mnav-weeks" onclick="setMobileTab('weeks')"><i class="fa-solid fa-boxes-stacked"></i><span>الدفعات</span></button>
+        <button type="button" class="mnav-btn mnav-exp" onclick="setMobileTab('exp')"><i class="fa-solid fa-receipt"></i><span>المصاريف</span></button>
     </nav>
 
     <!-- Change password (any signed-in user) -->
+    <div id="expEditModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="glass-card bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-lg font-black text-slate-900 dark:text-white">تعديل المصروف</h3>
+                <button type="button" onclick="closeExpEdit()" aria-label="إغلاق" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleExpenseEdit(event)" class="space-y-4">
+                <input type="hidden" id="expEditId">
+                <div><label for="expEditDate" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">التاريخ (يوم_شهر_سنة)</label><input type="text" id="expEditDate" data-datefmt inputmode="numeric" maxlength="8" dir="ltr" placeholder="dd_mm_yy" autocomplete="off" style="text-align:right" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm transition"></div>
+                <div><label for="expEditAmount" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">المبلغ (د.ج)</label><input type="number" id="expEditAmount" min="0.01" step="0.01" inputmode="decimal" dir="ltr" required class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm transition"></div>
+                <div><label for="expEditCategory" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">التصنيف</label><input type="text" id="expEditCategory" list="expCategories" maxlength="60" autocomplete="off" class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm transition"></div>
+                <div><label for="expEditNote" class="block text-sm font-semibold mb-2 text-slate-700 dark:text-slate-300">ملاحظة</label><textarea id="expEditNote" rows="2" maxlength="500" class="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm transition resize-none"></textarea></div>
+                <div class="flex gap-3"><button type="submit" class="flex-1 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-red-500 text-white font-bold">حفظ التعديل</button>
+                <button type="button" onclick="closeExpEdit()" class="px-5 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">إلغاء</button></div>
+            </form>
+        </div>
+    </div>
+
     <div id="aboutModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4" onclick="if (event.target === this) closeAbout()">
         <div class="glass-card bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
             <div class="flex items-start justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
@@ -813,6 +896,17 @@
                 </div>
             </div>
 
+            <div id="pdfExpenseSummary" class="grid grid-cols-2 gap-4 mb-6 text-center">
+                <div class="p-4 bg-rose-50 rounded-xl border border-rose-200">
+                    <p class="text-xs text-slate-500 font-bold mb-1">إجمالي المصاريف</p>
+                    <p id="pdfReportExpenses" class="text-lg font-black text-rose-600"></p>
+                </div>
+                <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                    <p class="text-xs text-slate-500 font-bold mb-1">الصافي (المداخيل − المصاريف)</p>
+                    <p id="pdfReportNet" class="text-lg font-black text-emerald-700"></p>
+                </div>
+            </div>
+
             <!-- Entries Table -->
             <table class="w-full text-right border-collapse mb-8 text-xs">
                 <thead>
@@ -827,6 +921,17 @@
                     <!-- Dynamic -->
                 </tbody>
             </table>
+
+            <div id="pdfExpenseBlock" class="mb-8">
+                <h2 class="text-sm font-black text-slate-800 mb-2">المصاريف خلال الفترة</h2>
+                <table class="w-full text-right border-collapse text-xs">
+                    <thead><tr class="bg-rose-700 text-white font-bold">
+                        <th class="py-2.5 px-4 border border-rose-700">التاريخ</th><th class="py-2.5 px-4 border border-rose-700">المبلغ</th>
+                        <th class="py-2.5 px-4 border border-rose-700">التصنيف</th><th class="py-2.5 px-4 border border-rose-700">الملاحظة</th>
+                    </tr></thead>
+                    <tbody id="pdfExpenseTableBody"></tbody>
+                </table>
+            </div>
 
             <!-- Footer -->
             <div class="pt-4 border-t border-slate-300 text-center text-xs text-slate-400">
@@ -861,7 +966,8 @@
         // State Management
         let appData = {
             entries: [],
-            weeklyBatches: []
+            weeklyBatches: [],
+            expenses: []
         };
 
         let currentDeleteId = null;
@@ -875,7 +981,7 @@
         let role = 'observer';
         let recovering = false;
         let busyUser = null;
-        let savedSnap = { entries: new Map(), batches: new Map() };
+        let savedSnap = { entries: new Map(), batches: new Map(), expenses: new Map() };
         let saveQueue = Promise.resolve();
         let pendingSyncs = 0;
         let pollTimer = null;
@@ -907,6 +1013,13 @@
             return { id, date: String(e.date), amount: Math.round(amount * 100) / 100, note: String(e.note || '').slice(0, 500),
                      transferred: !!e.transferred, createdAt: validIso(e.createdAt) };
         }
+        function sanitizeExpense(e) {
+            if (!e) return null;
+            const id = cleanId(e.id), amount = Number(e.amount);
+            if (!id || !isRealDate(e.date) || !isFinite(amount) || amount <= 0) return null;
+            return { id, date: String(e.date), amount: Math.round(amount * 100) / 100, category: String(e.category || '').trim().slice(0, 60),
+                     note: String(e.note || '').slice(0, 500), createdAt: validIso(e.createdAt) };
+        }
         function sanitizeBatch(x) {
             if (!x) return null;
             const id = cleanId(x.id), total = Number(x.totalAmount);
@@ -920,15 +1033,17 @@
 
         // app state <-> database rows
         function toRows() {
-            const entries = new Map(), batches = new Map();
+            const entries = new Map(), batches = new Map(), expenses = new Map();
             appData.entries.forEach(e => entries.set(e.id, { id: e.id, entry_date: e.date, amount: e.amount, note: e.note || '', transferred: !!e.transferred, created_at: validIso(e.createdAt) }));
             appData.weeklyBatches.forEach(x => batches.set(x.id, { id: x.id, start_date: x.startDate || null, end_date: x.endDate || null, total_amount: x.totalAmount, entries_count: x.entriesCount || 0, entry_ids: x.entryIds || [], created_at: validIso(x.createdAt) }));
-            return { entries, batches };
+            appData.expenses.forEach(x => expenses.set(x.id, { id: x.id, expense_date: x.date, amount: x.amount, category: x.category || '', note: x.note || '', created_at: validIso(x.createdAt) }));
+            return { entries, batches, expenses };
         }
         function snapshotNow() {
-            const rows = toRows(), snap = { entries: new Map(), batches: new Map() };
+            const rows = toRows(), snap = { entries: new Map(), batches: new Map(), expenses: new Map() };
             rows.entries.forEach((r, id) => snap.entries.set(id, JSON.stringify(r)));
             rows.batches.forEach((r, id) => snap.batches.set(id, JSON.stringify(r)));
+            rows.expenses.forEach((r, id) => snap.expenses.set(id, JSON.stringify(r)));
             return snap;
         }
         async function fetchAll(table, orderCol) {
@@ -944,9 +1059,10 @@
         async function loadData() {
             if (!sb || !authed) return;
             try {
-                const [er, br] = await Promise.all([fetchAll('entries', 'entry_date'), fetchAll('batches', 'created_at')]);
+                const [er, br, xr] = await Promise.all([fetchAll('entries', 'entry_date'), fetchAll('batches', 'created_at'), fetchAll('expenses', 'expense_date')]);
                 appData = {
                     entries: er.map(r => ({ id: r.id, date: r.entry_date, amount: Number(r.amount), note: r.note || '', transferred: !!r.transferred, createdAt: r.created_at })),
+                    expenses: xr.map(r => ({ id: r.id, date: r.expense_date, amount: Number(r.amount), category: r.category || '', note: r.note || '', createdAt: r.created_at })),
                     weeklyBatches: br.map(r => ({ id: r.id, startDate: r.start_date || '', endDate: r.end_date || '', totalAmount: Number(r.total_amount), entriesCount: r.entries_count || 0, entryIds: r.entry_ids || [], createdAt: r.created_at }))
                 };
                 savedSnap = snapshotNow();
@@ -963,7 +1079,7 @@
             if (!sb || !authed || role !== 'manager') return;
             const want = toRows();
             let failed = false;
-            for (const key of ['entries', 'batches']) {
+            for (const key of ['entries', 'batches', 'expenses']) {
                 const gone = Array.from(savedSnap[key].keys()).filter(id => !want[key].has(id));
                 for (let i = 0; i < gone.length; i += 100) {
                     const part = gone.slice(i, i + 100);
@@ -971,7 +1087,7 @@
                     if (error) failed = true; else part.forEach(id => savedSnap[key].delete(id));
                 }
             }
-            for (const key of ['entries', 'batches']) {
+            for (const key of ['entries', 'batches', 'expenses']) {
                 const changed = [];
                 want[key].forEach((row, id) => {
                     const j = JSON.stringify(row);
@@ -1062,6 +1178,7 @@
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             document.getElementById('entryDate').value = isoToDmy(`${year}-${month}-${day}`);
+            const ed = document.getElementById('expDate'); if (ed) ed.value = isoToDmy(`${year}-${month}-${day}`);
         }
 
         // Every change goes to the database through one queue
@@ -1219,6 +1336,7 @@
         function promptDelete(id) {
             if (!requireManager()) return;
             currentDeleteId = id;
+            currentExpDeleteId = null;
             document.getElementById('confirmDeleteBtn').setAttribute('onclick', `executeDelete()`);
             document.getElementById('deleteModal').classList.remove('hidden');
             document.getElementById('deleteModal').classList.add('flex');
@@ -1226,6 +1344,7 @@
 
         function closeDeleteModal() {
             currentDeleteId = null;
+            currentExpDeleteId = null;
             document.getElementById('deleteModal').classList.remove('flex');
             document.getElementById('deleteModal').classList.add('hidden');
         }
@@ -1412,6 +1531,7 @@
         function generatePDF() {
             const type = document.getElementById('reportType').value;
             let reportEntries = [];
+            let reportExpenses = [];
             let subtitleText = '';
 
             if (type === 'weekly') {
@@ -1422,6 +1542,7 @@
                     return;
                 }
                 reportEntries = appData.entries.filter(e => batch.entryIds && batch.entryIds.includes(e.id));
+                reportExpenses = appData.expenses.filter(x => batch.startDate && batch.endDate && x.date >= batch.startDate && x.date <= batch.endDate);
                 subtitleText = `تقرير أسبوعي للدفعة رقم (${batch.id}) - الفترة من ${formatDateDisplay(batch.startDate)} إلى ${formatDateDisplay(batch.endDate)}`;
             } else {
                 const monthVal = document.getElementById('reportMonthSelect').value; // YYYY-MM
@@ -1430,6 +1551,7 @@
                     return;
                 }
                 reportEntries = appData.entries.filter(e => e.date && e.date.startsWith(monthVal));
+                reportExpenses = appData.expenses.filter(x => x.date.startsWith(monthVal));
                 
                 const [year, month] = monthVal.split('-');
                 const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
@@ -1452,6 +1574,16 @@
             document.getElementById('pdfReportTotalAmount').innerText = formatCurrency(totalAmount);
             document.getElementById('pdfReportTotalDays').innerText = `${totalDays} يوم`;
             document.getElementById('pdfReportAvgAmount').innerText = formatCurrency(avgAmount);
+
+            const expTotal = reportExpenses.reduce((s, x) => s + x.amount, 0);
+            document.getElementById('pdfReportExpenses').innerText = formatCurrency(expTotal);
+            document.getElementById('pdfReportNet').innerText = formatCurrency(totalAmount - expTotal);
+            document.getElementById('pdfExpenseBlock').style.display = reportExpenses.length ? '' : 'none';
+            document.getElementById('pdfExpenseTableBody').innerHTML = reportExpenses.slice().sort((a, b) => a.date.localeCompare(b.date)).map(x =>
+                '<tr class="border-b border-slate-200"><td class="py-2 px-4 border border-slate-300 font-bold">' + formatDateDisplay(x.date) + '</td>' +
+                '<td class="py-2 px-4 border border-slate-300 font-bold text-rose-700">' + formatCurrency(x.amount) + '</td>' +
+                '<td class="py-2 px-4 border border-slate-300">' + (esc(x.category) || '—') + '</td>' +
+                '<td class="py-2 px-4 border border-slate-300">' + (esc(x.note) || '—') + '</td></tr>').join('');
 
             const tbody = document.getElementById('pdfReportTableBody');
             tbody.innerHTML = '';
@@ -1486,7 +1618,8 @@
         }
 
         function mergeIncomingData(incomingData) {
-            if (!incomingData || !incomingData.entries) return;
+            if (!incomingData || !(incomingData.entries || incomingData.expenses)) return;
+            incomingData.entries = incomingData.entries || [];
 
             let mergedCount = 0;
             const existingEntryIds = new Set(appData.entries.map(e => e.id));
@@ -1515,9 +1648,129 @@
                 });
             }
 
+            let expAdded = 0;
+            const haveExp = new Set(appData.expenses.map(x => x.id));
+            (incomingData.expenses || []).map(sanitizeExpense).filter(Boolean).forEach(x => { if (!haveExp.has(x.id)) { appData.expenses.push(x); expAdded++; } });
+            mergedCount += expAdded;
+
             saveToLocalStorage(false); // Don't echo infinitely
             renderAll();
             showToast(`تم الاستيراد: ${mergedCount} إدخالات جديدة.`);
+        }
+
+
+        // ---------------- Expenses ----------------
+        let currentExpDeleteId = null;
+        function renderExpenses() {
+            const list = appData.expenses || [];
+            const total = list.reduce((s, x) => s + x.amount, 0);
+            const monthKey = localTodayIso().slice(0, 7);
+            const monthTotal = list.filter(x => x.date.startsWith(monthKey)).reduce((s, x) => s + x.amount, 0);
+            const income = appData.entries.reduce((s, x) => s + x.amount, 0);
+            const net = income - total;
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+            set('statTotalExpenses', formatCurrency(total));
+            set('statMonthExpenses', formatCurrency(monthTotal));
+            set('statExpCount', list.length);
+            const netEl = document.getElementById('statNet');
+            if (netEl) {
+                netEl.textContent = formatCurrency(net);
+                netEl.className = 'text-2xl font-black ' + (net < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400');
+            }
+
+            const q = document.getElementById('expSearch').value.toLowerCase().trim();
+            const rawDate = document.getElementById('expFilterDate').value;
+            const dateIso = dmyToIso(rawDate);
+            const filtered = list.filter(x => {
+                if (rawDate.trim() && dateIso && x.date !== dateIso) return false;
+                if (rawDate.trim() && !dateIso && !isoToDmy(x.date).includes(rawDate.trim())) return false;
+                if (!q) return true;
+                return (x.category || '').toLowerCase().includes(q) || (x.note || '').toLowerCase().includes(q)
+                    || formatDateDisplay(x.date).includes(q) || isoToDmy(x.date).includes(q);
+            }).sort((a, b) => b.date.localeCompare(a.date) || String(b.createdAt).localeCompare(String(a.createdAt)));
+
+            set('expCountBadge', filtered.length + ' مصروف · ' + formatCurrency(filtered.reduce((s, x) => s + x.amount, 0)));
+            document.getElementById('noExpenses').classList.toggle('hidden', filtered.length > 0);
+
+            const byCat = new Map();
+            list.forEach(x => { const k = x.category || 'بدون تصنيف'; byCat.set(k, (byCat.get(k) || 0) + x.amount); });
+            document.getElementById('expCatChips').innerHTML = Array.from(byCat.entries()).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) =>
+                '<span class="px-3 py-1.5 rounded-full text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-100 dark:border-rose-900/50">' + esc(k) + ' · ' + formatCurrency(v) + '</span>').join('');
+
+            document.getElementById('expTableBody').innerHTML = filtered.map(x =>
+                '<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition">' +
+                '<td class="py-4 px-6 font-bold text-slate-900 dark:text-white whitespace-nowrap">' + formatDateDisplay(x.date) + '</td>' +
+                '<td class="py-4 px-6 font-black text-rose-600 dark:text-rose-400 whitespace-nowrap">' + formatCurrency(x.amount) + '</td>' +
+                '<td class="py-4 px-6 whitespace-nowrap">' + (x.category ? '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">' + esc(x.category) + '</span>' : '<span class="text-slate-400">—</span>') + '</td>' +
+                '<td class="py-4 px-6 text-slate-500 dark:text-slate-400 max-w-xs truncate">' + (esc(x.note) || '—') + '</td>' +
+                '<td class="mgr-only py-4 px-6 text-center whitespace-nowrap"><div class="flex items-center justify-center gap-2">' +
+                    '<button onclick="openExpEdit(\'' + x.id + '\')" title="تعديل" class="p-2 rounded-xl text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-800 transition"><i class="fa-solid fa-pen-to-square"></i></button>' +
+                    '<button onclick="promptDeleteExpense(\'' + x.id + '\')" title="حذف" class="p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-slate-800 transition"><i class="fa-solid fa-trash-can"></i></button>' +
+                '</div></td></tr>').join('');
+        }
+        function handleExpenseSubmit(e) {
+            e.preventDefault();
+            if (!requireManager()) return;
+            const date = dmyToIso(document.getElementById('expDate').value);
+            const amount = parseFloat(document.getElementById('expAmount').value);
+            if (!date) { showToast('اكتب التاريخ بصيغة dd_mm_yy مثل 17_10_26', 'error'); return; }
+            if (isNaN(amount) || amount <= 0) { showToast('أدخل مبلغًا صحيحًا', 'error'); return; }
+            appData.expenses.unshift({
+                id: '_' + Math.random().toString(36).substr(2, 9), date, amount: Math.round(amount * 100) / 100,
+                category: document.getElementById('expCategory').value.trim().slice(0, 60),
+                note: document.getElementById('expNote').value.trim().slice(0, 500), createdAt: new Date().toISOString()
+            });
+            saveToLocalStorage();
+            document.getElementById('expenseForm').reset();
+            setDefaultDate();
+            renderExpenses();
+            showToast('تمت إضافة المصروف');
+        }
+        function openExpEdit(id) {
+            if (!requireManager()) return;
+            const x = appData.expenses.find(i => i.id === id);
+            if (!x) return;
+            document.getElementById('expEditId').value = x.id;
+            document.getElementById('expEditDate').value = isoToDmy(x.date);
+            document.getElementById('expEditAmount').value = x.amount;
+            document.getElementById('expEditCategory').value = x.category || '';
+            document.getElementById('expEditNote').value = x.note || '';
+            const m = document.getElementById('expEditModal'); m.classList.remove('hidden'); m.classList.add('flex');
+        }
+        function closeExpEdit() { const m = document.getElementById('expEditModal'); m.classList.remove('flex'); m.classList.add('hidden'); }
+        function handleExpenseEdit(e) {
+            e.preventDefault();
+            if (!requireManager()) return;
+            const x = appData.expenses.find(i => i.id === document.getElementById('expEditId').value);
+            const date = dmyToIso(document.getElementById('expEditDate').value);
+            const amount = parseFloat(document.getElementById('expEditAmount').value);
+            if (!x) return;
+            if (!date) { showToast('اكتب التاريخ بصيغة dd_mm_yy مثل 17_10_26', 'error'); return; }
+            if (isNaN(amount) || amount <= 0) { showToast('أدخل مبلغًا صحيحًا', 'error'); return; }
+            x.date = date; x.amount = Math.round(amount * 100) / 100;
+            x.category = document.getElementById('expEditCategory').value.trim().slice(0, 60);
+            x.note = document.getElementById('expEditNote').value.trim().slice(0, 500);
+            saveToLocalStorage();
+            closeExpEdit();
+            renderExpenses();
+            showToast('تم تعديل المصروف');
+        }
+        function promptDeleteExpense(id) {
+            if (!requireManager()) return;
+            currentExpDeleteId = id;
+            currentDeleteId = null;
+            document.getElementById('confirmDeleteBtn').setAttribute('onclick', 'executeDeleteExpense()');
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.getElementById('deleteModal').classList.add('flex');
+        }
+        function executeDeleteExpense() {
+            if (!requireManager() || !currentExpDeleteId) return;
+            appData.expenses = appData.expenses.filter(x => x.id !== currentExpDeleteId);
+            currentExpDeleteId = null;
+            saveToLocalStorage();
+            closeDeleteModal();
+            renderExpenses();
+            showToast('تم حذف المصروف', 'error');
         }
 
         // Render Functions
@@ -1525,6 +1778,7 @@
             renderStats();
             renderDailyEntries();
             renderWeeklyBatches();
+            renderExpenses();
             checkWeeklyReminder();
         }
 
@@ -1693,7 +1947,7 @@
             reader.onload = function(e) {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    if (parsed && (parsed.entries || parsed.weeklyBatches)) {
+                    if (parsed && (parsed.entries || parsed.weeklyBatches || parsed.expenses)) {
                         mergeIncomingData(parsed);
                     } else {
                         showToast('تنسيق الملف غير صحيح', 'error');
@@ -1835,8 +2089,8 @@
             }
         }
         async function onSignedOut() {
-            appData = { entries: [], weeklyBatches: [] };
-            savedSnap = { entries: new Map(), batches: new Map() };
+            appData = { entries: [], weeklyBatches: [], expenses: [] };
+            savedSnap = { entries: new Map(), batches: new Map(), expenses: new Map() };
             await enterObserver();
         }
         async function recheckAccess() {
