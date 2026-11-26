@@ -83,6 +83,8 @@
             #appRoot[data-mtab="weeks"] .ms-home, #appRoot[data-mtab="weeks"] .ms-add, #appRoot[data-mtab="weeks"] .ms-log { display: none; }
 
             #appRoot:not([data-mtab="exp"]) .ms-exp { display: none; }
+            #appRoot:not([data-mtab="orders"]) .ms-orders { display: none; }
+            #appRoot[data-mtab="orders"] .ms-home, #appRoot[data-mtab="orders"] .ms-add, #appRoot[data-mtab="orders"] .ms-log, #appRoot[data-mtab="orders"] .ms-weeks, #appRoot[data-mtab="orders"] .ms-exp { display: none; }
             #appRoot[data-mtab="exp"] .ms-home, #appRoot[data-mtab="exp"] .ms-add, #appRoot[data-mtab="exp"] .ms-log, #appRoot[data-mtab="exp"] .ms-weeks { display: none; }
             #appRoot table.m-expenses tr { grid-template-areas: "d a" "c c" "n x"; }
             #appRoot table.m-expenses td:nth-child(1) { grid-area: d; }
@@ -144,9 +146,9 @@
         html.dark #mobileNav .mnav-btn { color: #94a3b8; }
         #mobileNav .mnav-btn i { font-size: 1.15rem; }
         #appRoot[data-mtab="home"] .mnav-home, #appRoot[data-mtab="add"] .mnav-add,
-        #appRoot[data-mtab="log"] .mnav-log, #appRoot[data-mtab="weeks"] .mnav-weeks, #appRoot[data-mtab="exp"] .mnav-exp { color: #059669; background: rgba(16, 185, 129, .13); }
+        #appRoot[data-mtab="log"] .mnav-log, #appRoot[data-mtab="weeks"] .mnav-weeks, #appRoot[data-mtab="exp"] .mnav-exp, #appRoot[data-mtab="orders"] .mnav-orders { color: #059669; background: rgba(16, 185, 129, .13); }
         html.dark #appRoot[data-mtab="home"] .mnav-home, html.dark #appRoot[data-mtab="add"] .mnav-add,
-        html.dark #appRoot[data-mtab="log"] .mnav-log, html.dark #appRoot[data-mtab="weeks"] .mnav-weeks, html.dark #appRoot[data-mtab="exp"] .mnav-exp { color: #34d399; background: rgba(52, 211, 153, .14); }
+        html.dark #appRoot[data-mtab="log"] .mnav-log, html.dark #appRoot[data-mtab="weeks"] .mnav-weeks, html.dark #appRoot[data-mtab="exp"] .mnav-exp, html.dark #appRoot[data-mtab="orders"] .mnav-orders { color: #34d399; background: rgba(52, 211, 153, .14); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
@@ -156,6 +158,65 @@
         html.dark { color-scheme: dark; }
         body { margin: 0; }
         [hidden] { display: none !important; }
+#ordersSection{--bg:#F2F6F4;--surface:#FFFFFF;--surface-2:#E8EFEC;--ink:#14231E;--ink-2:#52665D;--line:#D3DED8;--accent:#0B7A62;--accent-ink:#FFFFFF;--accent-soft:#D6EFE7;--new:#1D4FB8;--new-bg:#DFE9FA;--ready:#865000;--ready-bg:#F8E7C6;--danger:#B3261E;--danger-bg:#FBE3E0}
+html.dark #ordersSection{--bg:#0C1311;--surface:#141E1B;--surface-2:#1C2925;--ink:#E6EFEB;--ink-2:#9BB1A9;--line:#293833;--accent:#3FCFA9;--accent-ink:#04211A;--accent-soft:#153A30;--new:#8DB4FF;--new-bg:#172B4D;--ready:#F0B454;--ready-bg:#3A2D12;--danger:#FF8A80;--danger-bg:#3F1B18}
+#ordersSection *{box-sizing:border-box}
+#ordersSection button, #ordersSection input, #ordersSection textarea{font:inherit;color:inherit}
+#ordersSection .num{font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
+#ordersSection .debt{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 18px}
+#ordersSection .debt > div:first-child{flex:1;text-align:center}
+#ordersSection .debt .lbl{font-size:1rem;color:var(--ink);font-weight:800;text-align:start;margin-bottom:2px}
+#ordersSection .debt .val{font-size:2.6rem;text-align:center;font-weight:800;color:var(--danger);line-height:1.2}
+#ordersSection .debt .meta{font-size:.8rem;color:var(--ink-2);text-align:left}
+#ordersSection .panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+#ordersSection .panel h3{margin:0 0 4px;font-size:1.1rem;font-weight:800}
+#ordersSection .panel p.hint{margin:0 0 14px;font-size:.85rem;color:var(--ink-2)}
+#ordersSection .fgrid{display:grid;grid-template-columns:minmax(0,1fr) 96px;gap:8px}
+#ordersSection .fgrid .full{grid-column:1/-1}
+#ordersSection label.f{display:block;font-size:.75rem;font-weight:700;color:var(--ink-2);margin-bottom:3px}
+#ordersSection input[type=text], #ordersSection input[type=number], #ordersSection input[type=password]{width:100%;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;color:var(--ink)}
+#ordersSection input[type=number]{direction:ltr;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+#ordersSection .reqline{border:1px dashed var(--line);border-radius:12px;padding:10px;margin-bottom:10px}
+#ordersSection .btn{border:0;border-radius:12px;padding:10px 18px;font-weight:800;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+#ordersSection .btn.ghost{background:var(--surface-2);color:var(--ink)}
+#ordersSection .btn.danger{background:var(--danger-bg);color:var(--danger)}
+#ordersSection .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#ordersSection .tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+#ordersSection .tabs button{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 16px;font-weight:700;font-size:.9rem;color:var(--ink-2);cursor:pointer}
+#ordersSection .tabs button[aria-selected="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+#ordersSection .tabs .c{display:inline-block;min-width:1.4em;margin-right:6px;padding:0 6px;border-radius:999px;background:var(--surface-2);color:var(--ink);font-size:.78rem}
+#ordersSection .tabs button[aria-selected="true"] .c{background:var(--surface);color:var(--ink)}
+#ordersSection .list{display:flex;flex-direction:column;gap:10px}
+#ordersSection .order{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+#ordersSection .order.attn{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+#ordersSection .ohead{width:100%;display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:center;text-align:right;background:transparent;border:0;padding:14px 16px;cursor:pointer}
+#ordersSection .ohead .no{font-weight:800;font-size:1.02rem}
+#ordersSection .ohead .sub{font-size:.8rem;color:var(--ink-2)}
+#ordersSection .ohead .tot{font-weight:800;font-size:1.2rem;text-align:left}
+#ordersSection .pill{display:inline-block;font-size:.72rem;font-weight:800;padding:2px 10px;border-radius:999px;margin-right:8px;vertical-align:middle}
+#ordersSection .pill.new{background:var(--new-bg);color:var(--new)}
+#ordersSection .pill.ready{background:var(--ready-bg);color:var(--ready)}
+#ordersSection .pill.approved{background:var(--accent-soft);color:var(--accent)}
+#ordersSection .pill.fix{background:var(--danger-bg);color:var(--danger)}
+#ordersSection .obody{border-top:1px solid var(--line);padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px}
+#ordersSection .inv{display:flex;flex-direction:column}
+#ordersSection .il{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:10px 0;border-bottom:1px dashed var(--line)}
+#ordersSection .il:last-child{border-bottom:0}
+#ordersSection .il .nm{font-weight:700}
+#ordersSection .il .sum{font-weight:800;font-size:1.2rem;text-align:left}
+#ordersSection .il .q{font-size:.85rem;color:var(--ink-2)}
+#ordersSection .il .req{display:inline-block;margin-right:20px;padding:1px 10px;border-radius:8px;background:var(--surface-2);color:var(--ink);font-size:.95rem;font-weight:700;vertical-align:middle}
+#ordersSection .il .nt{grid-column:1/-1;font-size:.8rem;color:var(--ink-2);background:var(--surface-2);border-radius:8px;padding:5px 9px}
+#ordersSection .il .nt b{color:var(--ink)}
+#ordersSection .il .ed{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#ordersSection .il .ed .full{grid-column:1/-1}
+#ordersSection .was{font-size:.75rem;font-weight:700;color:var(--danger);background:var(--danger-bg);border-radius:6px;padding:1px 7px;margin-right:6px;white-space:nowrap}
+#ordersSection .total{display:flex;align-items:center;justify-content:space-between;border-top:2px solid var(--ink);padding-top:10px;font-weight:800;font-size:1.15rem}
+#ordersSection .total .num{font-size:1.7rem;line-height:1.2}
+#ordersSection .note-end{font-size:.82rem;color:var(--ink-2)}
+#ordersSection .empty{text-align:center;color:var(--ink-2);padding:30px 10px;border:1px dashed var(--line);border-radius:16px}
+#ordersSection details.panel > summary{cursor:pointer;font-weight:800;font-size:1rem}
+#ordersSection details.panel[open] > summary{margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -185,6 +246,8 @@
                     <i class="fa-solid fa-user-lock text-lg"></i>
                     <span class="hidden md:inline">كلمة السر</span>
                 </button>
+                <button type="button" onclick="document.getElementById('expensesSection').scrollIntoView({behavior:'smooth'})" title="المصاريف" class="hidden md:flex p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-slate-700 transition items-center gap-2 font-bold text-xs"><i class="fa-solid fa-receipt text-lg"></i><span class="hidden lg:inline">المصاريف</span></button>
+                <button type="button" onclick="document.getElementById('ordersSection').scrollIntoView({behavior:'smooth'})" title="الطلبات" class="hidden md:flex p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700 transition items-center gap-2 font-bold text-xs"><i class="fa-solid fa-clipboard-list text-lg"></i><span class="hidden lg:inline">الطلبات</span></button>
                 <button id="aboutBtn" onclick="openAbout()" title="حول التطبيق" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700 transition flex items-center gap-2 font-bold text-xs">
                     <i class="fa-solid fa-circle-info text-lg"></i>
                     <span class="hidden lg:inline">حول التطبيق</span>
@@ -567,6 +630,61 @@
                 </div>
             </div>
         </section>
+
+        <!-- ================= Orders ================= -->
+        <section id="ordersSection" class="ms-orders space-y-6 mt-10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center"><i class="fa-solid fa-clipboard-list"></i></div>
+                <div>
+                    <h2 class="text-xl font-black text-slate-900 dark:text-white">الطلبات</h2>
+                    <p id="odSub" class="text-xs text-slate-500 dark:text-slate-400"></p>
+                </div>
+            </div>
+
+            <section class="debt mgr-only" aria-live="polite">
+                <div><div class="lbl">إجمالي الدين</div><div class="val num" id="odDebtVal">د.ج 0</div></div>
+                <div class="meta" id="odDebtMeta"></div>
+            </section>
+
+            <details class="panel mgr-only" id="odPinMgr" hidden>
+                <summary>رمز المراقب</summary>
+                <p class="hint" id="odPinState">...</p>
+                <div class="row">
+                    <input type="password" id="odPinNew" autocomplete="new-password" placeholder="رمز جديد (6 أحرف على الأقل)" style="max-width:260px">
+                    <button class="btn" type="button" id="odPinSave">حفظ الرمز</button>
+                </div>
+            </details>
+
+            <section class="panel" id="odPinObs" hidden>
+                <div id="odPinForm">
+                    <h3>تجهيز الطلبات</h3>
+                    <p class="hint">أدخل رمز المراقب لتتمكن من تجهيز الطلبات الجديدة. المراجعة والطباعة لا تحتاجان رمزًا.</p>
+                    <div class="row">
+                        <input type="password" id="odPinInput" autocomplete="off" placeholder="رمز المراقب" style="max-width:260px">
+                        <button class="btn" type="button" id="odPinCheck">تفعيل</button>
+                    </div>
+                </div>
+                <div id="odPinActive" class="row" hidden>
+                    <span class="note-end" style="color:var(--accent);font-weight:800">التجهيز مفعّل</span>
+                    <button class="btn ghost" type="button" id="odPinLogout">إيقاف</button>
+                </div>
+            </section>
+            <p id="odPinMsg" class="note-end" role="alert"></p>
+
+            <section class="panel mgr-only" id="odReq" hidden>
+                <h3>طلب منتجات جديد</h3>
+                <p class="hint">اكتب اسم المنتج والكمية، وأضف ملاحظة إن لزم. يصل الطلب إلى المراقب ليجهّزه كفاتورة.</p>
+                <div id="odReqLines"></div>
+                <div class="row">
+                    <button class="btn ghost" type="button" id="odAddLine">+ منتج آخر</button>
+                    <button class="btn" type="button" id="odSend">إرسال الطلب</button>
+                </div>
+            </section>
+
+            <nav class="tabs" role="tablist" id="odTabs"></nav>
+            <div class="list" id="odList"></div>
+        </section>
+
     </main>
     <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-28 md:pb-8 text-center text-xs text-slate-500 dark:text-slate-400">
         <button type="button" onclick="openAbout()" class="font-bold underline hover:text-emerald-600 dark:hover:text-emerald-400">حول التطبيق</button>
@@ -580,6 +698,7 @@
         <button type="button" class="mnav-btn mnav-log" onclick="setMobileTab('log')"><i class="fa-solid fa-list-check"></i><span>السجل</span></button>
         <button type="button" class="mnav-btn mnav-weeks" onclick="setMobileTab('weeks')"><i class="fa-solid fa-boxes-stacked"></i><span>الدفعات</span></button>
         <button type="button" class="mnav-btn mnav-exp" onclick="setMobileTab('exp')"><i class="fa-solid fa-receipt"></i><span>المصاريف</span></button>
+        <button type="button" class="mnav-btn mnav-orders" onclick="setMobileTab('orders')"><i class="fa-solid fa-clipboard-list"></i><span>الطلبات</span></button>
     </nav>
 
     <!-- Change password (any signed-in user) -->
@@ -967,7 +1086,8 @@
         let appData = {
             entries: [],
             weeklyBatches: [],
-            expenses: []
+            expenses: [],
+            orders: []
         };
 
         let currentDeleteId = null;
@@ -981,7 +1101,7 @@
         let role = 'observer';
         let recovering = false;
         let busyUser = null;
-        let savedSnap = { entries: new Map(), batches: new Map(), expenses: new Map() };
+        let savedSnap = { entries: new Map(), batches: new Map(), expenses: new Map(), orders: new Map() };
         let saveQueue = Promise.resolve();
         let pendingSyncs = 0;
         let pollTimer = null;
@@ -1033,17 +1153,19 @@
 
         // app state <-> database rows
         function toRows() {
-            const entries = new Map(), batches = new Map(), expenses = new Map();
+            const entries = new Map(), batches = new Map(), expenses = new Map(), orders = new Map();
             appData.entries.forEach(e => entries.set(e.id, { id: e.id, entry_date: e.date, amount: e.amount, note: e.note || '', transferred: !!e.transferred, created_at: validIso(e.createdAt) }));
             appData.weeklyBatches.forEach(x => batches.set(x.id, { id: x.id, start_date: x.startDate || null, end_date: x.endDate || null, total_amount: x.totalAmount, entries_count: x.entriesCount || 0, entry_ids: x.entryIds || [], created_at: validIso(x.createdAt) }));
             appData.expenses.forEach(x => expenses.set(x.id, { id: x.id, expense_date: x.date, amount: x.amount, category: x.category || '', note: x.note || '', created_at: validIso(x.createdAt) }));
-            return { entries, batches, expenses };
+            appData.orders.forEach(o => orders.set(o.id, { id: o.id, no: o.no, order_date: o.date, status: o.status, requester: o.requester || '', lines: o.lines, corrected: !!o.corrected, approved_at: o.approvedAt || null, created_at: validIso(o.createdAt) }));
+            return { entries, batches, expenses, orders };
         }
         function snapshotNow() {
-            const rows = toRows(), snap = { entries: new Map(), batches: new Map(), expenses: new Map() };
+            const rows = toRows(), snap = { entries: new Map(), batches: new Map(), expenses: new Map(), orders: new Map() };
             rows.entries.forEach((r, id) => snap.entries.set(id, JSON.stringify(r)));
             rows.batches.forEach((r, id) => snap.batches.set(id, JSON.stringify(r)));
             rows.expenses.forEach((r, id) => snap.expenses.set(id, JSON.stringify(r)));
+            rows.orders.forEach((r, id) => snap.orders.set(id, JSON.stringify(r)));
             return snap;
         }
         async function fetchAll(table, orderCol) {
@@ -1059,9 +1181,10 @@
         async function loadData() {
             if (!sb || !authed) return;
             try {
-                const [er, br, xr] = await Promise.all([fetchAll('entries', 'entry_date'), fetchAll('batches', 'created_at'), fetchAll('expenses', 'expense_date')]);
+                const [er, br, xr, orr] = await Promise.all([fetchAll('entries', 'entry_date'), fetchAll('batches', 'created_at'), fetchAll('expenses', 'expense_date'), fetchAll('orders', 'created_at')]);
                 appData = {
                     entries: er.map(r => ({ id: r.id, date: r.entry_date, amount: Number(r.amount), note: r.note || '', transferred: !!r.transferred, createdAt: r.created_at })),
+                    orders: orr.map(r => ({ id: r.id, no: r.no, date: r.order_date, status: r.status, requester: r.requester || '', lines: Array.isArray(r.lines) ? r.lines : [], corrected: !!r.corrected, approvedAt: r.approved_at || '', createdAt: r.created_at })),
                     expenses: xr.map(r => ({ id: r.id, date: r.expense_date, amount: Number(r.amount), category: r.category || '', note: r.note || '', createdAt: r.created_at })),
                     weeklyBatches: br.map(r => ({ id: r.id, startDate: r.start_date || '', endDate: r.end_date || '', totalAmount: Number(r.total_amount), entriesCount: r.entries_count || 0, entryIds: r.entry_ids || [], createdAt: r.created_at }))
                 };
@@ -1079,7 +1202,7 @@
             if (!sb || !authed || role !== 'manager') return;
             const want = toRows();
             let failed = false;
-            for (const key of ['entries', 'batches', 'expenses']) {
+            for (const key of ['entries', 'batches', 'expenses', 'orders']) {
                 const gone = Array.from(savedSnap[key].keys()).filter(id => !want[key].has(id));
                 for (let i = 0; i < gone.length; i += 100) {
                     const part = gone.slice(i, i + 100);
@@ -1087,7 +1210,7 @@
                     if (error) failed = true; else part.forEach(id => savedSnap[key].delete(id));
                 }
             }
-            for (const key of ['entries', 'batches', 'expenses']) {
+            for (const key of ['entries', 'batches', 'expenses', 'orders']) {
                 const changed = [];
                 want[key].forEach((row, id) => {
                     const j = JSON.stringify(row);
@@ -1111,6 +1234,8 @@
         function stopPolling() { clearInterval(pollTimer); pollTimer = null; }
         async function pollTick() {
             if (document.hidden || !authed || pendingSyncs > 0) return;
+            const ae = document.activeElement;
+            if (ae && ae.tagName === 'INPUT' && ae.closest && ae.closest('#ordersSection')) return;
             await loadData();
         }
         document.addEventListener('visibilitychange', () => { if (!document.hidden && authed && pendingSyncs === 0) pollTick(); });
@@ -1779,6 +1904,7 @@
             renderDailyEntries();
             renderWeeklyBatches();
             renderExpenses();
+            if (window.renderOrders) window.renderOrders();
             checkWeeklyReminder();
         }
 
@@ -2319,6 +2445,271 @@
 
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp);
         else bootApp();
+    </script>
+    <script>
+/* Orders section: request -> invoice prepared by the observer -> counted and approved by the manager -> debt */
+(function () {
+  var root = document.getElementById('ordersSection');
+  var tab = 'ready', openId = null, draft = [], seq = 100, lastRole = null, obsPin = null;
+  try { obsPin = sessionStorage.getItem('obsPin') || null; } catch (e) {}
+  function O() { return appData.orders; }
+
+  function R() { return role === 'manager' ? 'mgr' : (obsPin ? 'prep' : 'view'); }
+  function esc2(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function fmt(n) { var s = Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 }); return 'د.ج‎ ' + s; }
+  function dmy(d) { d = d || new Date(); var p = function (n) { return String(n).padStart(2, '0'); }; return p(d.getDate()) + '_' + p(d.getMonth() + 1) + '_' + String(d.getFullYear()).slice(2); }
+  function nid() { return 'o' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function pad(n) { return String(n).padStart(4, '0'); }
+  function num(v) { var n = parseFloat(v); return isNaN(n) ? null : n; }
+  function line(name, qty, note, extra) { return Object.assign({ id: nid(), name: name, qty: qty, note: note || '', prepNote: '', price: null, prepQty: null, countQty: null, pricePrep: null }, extra || {}); }
+
+  function eff(o, l) {
+    if (o.status === 'approved') return l.countQty;
+    if (o.status === 'ready') return R() === 'mgr' && l.countQty != null ? l.countQty : l.prepQty;
+    return l.prepQty != null ? l.prepQty : l.qty;
+  }
+  function priced(o) { return o.lines.every(function (l) { return l.price > 0; }); }
+  function total(o) { return o.lines.reduce(function (s, l) { return s + (eff(o, l) || 0) * (l.price || 0); }, 0); }
+  function debtTotal() { return O().filter(function (o) { return o.status === 'approved'; }).reduce(function (s, o) { return s + total(o); }, 0); }
+  function $(id) { return document.getElementById(id); }
+
+  function renderDebt() {
+    var ap = O().filter(function (o) { return o.status === 'approved'; });
+    $('odDebtVal').textContent = fmt(debtTotal());
+    $('odDebtMeta').textContent = ap.length + ' فاتورة معتمدة';
+  }
+  function renderDraft() {
+    $('odReqLines').innerHTML = draft.map(function (d, i) {
+      return '<div class="reqline"><div class="fgrid">' +
+        '<div><label class="f" for="odn' + i + '">اسم المنتج</label><input type="text" id="odn' + i + '" data-d="' + i + '" data-k="name" value="' + esc2(d.name) + '" placeholder="مثال: سكر"></div>' +
+        '<div><label class="f" for="odq' + i + '">الكمية</label><input type="number" id="odq' + i + '" data-d="' + i + '" data-k="qty" min="0" step="any" value="' + esc2(d.qty) + '" placeholder="0"></div>' +
+        '<div class="full"><label class="f" for="odt' + i + '">ملاحظة على المنتج (اختياري)</label><input type="text" id="odt' + i + '" data-d="' + i + '" data-k="note" value="' + esc2(d.note) + '" placeholder="النوع، الحجم، أو أي تفصيل"></div>' +
+        '</div>' + (draft.length > 1 ? '<div style="margin-top:8px"><button type="button" class="btn danger" data-rmd="' + i + '" style="padding:4px 12px;font-size:.8rem">حذف السطر</button></div>' : '') + '</div>';
+    }).join('');
+  }
+  function renderTabs() {
+    var cnt = function (s) { return O().filter(function (o) { return o.status === s; }).length; };
+    var defs = [{ id: 'new', n: 'جديدة', c: cnt('new') }, { id: 'ready', n: 'جاهزة', c: cnt('ready') }, { id: 'done', n: 'المعتمدة', c: cnt('approved') }];
+    $('odTabs').innerHTML = defs.map(function (t) {
+      return '<button type="button" role="tab" data-tab="' + t.id + '" aria-selected="' + (tab === t.id) + '">' + t.n + '<span class="c num">' + t.c + '</span></button>';
+    }).join('');
+  }
+  function statusPill(o) {
+    if (o.status === 'new') return '<span class="pill new">جديد</span>';
+    if (o.status === 'ready') return '<span class="pill ready">جاهز</span>';
+    return '<span class="pill approved">معتمد</span>' + (o.corrected ? '<span class="pill fix">صُحّحت</span>' : '');
+  }
+  function needsMe(o) { return (R() === 'prep' && o.status === 'new') || (R() === 'mgr' && o.status === 'ready'); }
+
+  function lineHtml(o, l) {
+    var q = eff(o, l), sum = (q || 0) * (l.price || 0);
+    var editPrep = R() === 'prep' && o.status === 'new';
+    var editMgr = R() === 'mgr' && o.status === 'ready';
+    var h = '<div class="il"><div><span class="nm">' + esc2(l.name) + '</span>';
+    if (!editPrep && !editMgr) {
+      h += '<div class="q"><span class="num">' + esc2(q != null ? q : l.qty) + '</span> × <span class="num">' + (l.price ? fmt(l.price) : 'بلا سعر') + '</span>';
+      if (o.status !== 'new' && l.qty !== q && l.qty != null) h += ' <span class="was">طُلب ' + esc2(l.qty) + '</span>';
+      if (o.status === 'approved' && l.prepQty !== l.countQty) h += ' <span class="was">الفاتورة ' + esc2(l.prepQty) + '</span>';
+      if (o.status === 'approved' && l.pricePrep !== l.price) h += ' <span class="was">السعر كان ' + esc2(l.pricePrep) + '</span>';
+      h += '</div>';
+    } else {
+      h += '<span class="req">المطلوب: <span class="num">' + esc2(l.qty) + '</span></span>';
+    }
+    h += '</div><div class="sum num" id="osub-' + l.id + '">' + (l.price ? fmt(sum) : '—') + '</div>';
+    if (l.note) h += '<div class="nt"><b>ملاحظة الطلب:</b> ' + esc2(l.note) + '</div>';
+    if (l.prepNote && !editPrep) h += '<div class="nt"><b>ملاحظة المجهّز:</b> ' + esc2(l.prepNote) + '</div>';
+    if (editPrep) {
+      h += '<div class="ed">' +
+        '<div><label class="f" for="opq' + l.id + '">الكمية المجهّزة</label><input type="number" id="opq' + l.id + '" min="0" step="any" data-o="' + o.id + '" data-l="' + l.id + '" data-f="prepQty" value="' + esc2(l.prepQty != null ? l.prepQty : l.qty) + '"></div>' +
+        '<div><label class="f" for="opp' + l.id + '">سعر الوحدة (د.ج)</label><input type="number" id="opp' + l.id + '" min="0" step="any" data-o="' + o.id + '" data-l="' + l.id + '" data-f="price" value="' + esc2(l.price == null ? '' : l.price) + '" placeholder="0"></div>' +
+        '<div class="full"><label class="f" for="opn' + l.id + '">ملاحظتك على المنتج (اختياري)</label><input type="text" id="opn' + l.id + '" data-o="' + o.id + '" data-l="' + l.id + '" data-f="prepNote" value="' + esc2(l.prepNote) + '" placeholder="مثال: نفد منه، بديل..."></div></div>';
+    }
+    if (editMgr) {
+      var cq = l.countQty != null ? l.countQty : l.prepQty;
+      h += '<div class="ed">' +
+        '<div><label class="f" for="ocq' + l.id + '">الكمية بعد العدّ (الفاتورة: ' + esc2(l.prepQty) + ')</label><input type="number" id="ocq' + l.id + '" min="0" step="any" data-o="' + o.id + '" data-l="' + l.id + '" data-f="countQty" value="' + esc2(cq) + '"></div>' +
+        '<div><label class="f" for="ocp' + l.id + '">السعر (د.ج)</label><input type="number" id="ocp' + l.id + '" min="0" step="any" data-o="' + o.id + '" data-l="' + l.id + '" data-f="price" value="' + esc2(l.price) + '"></div>' +
+        '<div class="full" id="odiff-' + l.id + '"></div></div>';
+    }
+    return h + '</div>';
+  }
+
+  function orderHtml(o) {
+    var open = openId === o.id, t = total(o), known = o.status !== 'new' || priced(o), r = R();
+    var h = '<article class="order' + (needsMe(o) ? ' attn' : '') + '"><button type="button" class="ohead" data-open="' + o.id + '" aria-expanded="' + open + '">' +
+      '<span><span class="no">فاتورة ف-' + pad(o.no) + '</span>' + statusPill(o) + '</span>' +
+      '<span class="tot num" id="ohdr-' + o.id + '">' + (known ? fmt(t) : 'بانتظار التسعير') + '</span>' +
+      '<span class="sub">' + esc2(isoToDmy(o.date)) + ' · ' + esc2(o.requester) + ' · ' + o.lines.length + ' منتجات' + (needsMe(o) ? ' · <b style="color:var(--accent)">بانتظارك</b>' : '') + '</span><span></span></button>';
+    if (open) {
+      h += '<div class="obody"><div class="inv">' + o.lines.map(function (l) { return lineHtml(o, l); }).join('') + '</div>' +
+        '<div class="total"><span>المجموع</span><span class="num" id="otot-' + o.id + '">' + (known ? fmt(t) : '—') + '</span></div>';
+      if (r === 'prep' && o.status === 'new') h += '<div class="row"><button class="btn" type="button" data-ready="' + o.id + '">تعيين الفاتورة جاهزة</button><span class="note-end">تصل المدير ليعدّ المنتجات ويصحّحها.</span></div>';
+      else if (r === 'mgr' && o.status === 'ready') h += '<div class="row"><button class="btn" type="button" data-approve="' + o.id + '">اعتماد وتسجيل المجموع كدين</button><span class="note-end">عدّ المنتجات يدويًا وصحّح الكمية قبل الاعتماد.</span></div>';
+      else if (o.status === 'new') h += '<div class="note-end">بانتظار المراقب ليجهّز الطلب ويسعّره.</div>';
+      else if (o.status === 'ready') h += '<div class="note-end">بانتظار عدّ المدير واعتماده.</div>';
+      else h += '<div class="note-end">اعتُمدت ' + esc2(isoToDmy(o.approvedAt)) + ' وسُجّل المجموع دينًا على المدير.' + '</div>';
+      h += '</div>';
+    }
+    return h + '</article>';
+  }
+  function renderList() {
+    var st = tab === 'done' ? 'approved' : tab;
+    var rows = O().filter(function (o) { return o.status === st; }).sort(function (a, b) { return b.no - a.no; });
+    $('odList').innerHTML = rows.length ? rows.map(orderHtml).join('') :
+      '<div class="empty">' + (tab === 'new' ? 'لا توجد طلبات جديدة.' : tab === 'ready' ? 'لا توجد فواتير جاهزة بانتظار الاعتماد.' : 'لا توجد فواتير معتمدة بعد.') + '</div>';
+  }
+
+  function refresh(o) {
+    o.lines.forEach(function (l) {
+      var s = $('osub-' + l.id); if (s) s.textContent = l.price ? fmt((eff(o, l) || 0) * l.price) : '—';
+      var d = $('odiff-' + l.id);
+      if (d && o.status === 'ready') {
+        var parts = [];
+        if (eff(o, l) !== l.prepQty) parts.push('<span class="was">الفاتورة ' + esc2(l.prepQty) + '</span>');
+        if (l.price !== l.pricePrep) parts.push('<span class="was">السعر كان ' + esc2(l.pricePrep) + '</span>');
+        d.innerHTML = parts.join('');
+      }
+    });
+    var ok = o.status !== 'new' || priced(o), t = $('otot-' + o.id), hd = $('ohdr-' + o.id);
+    if (t) t.textContent = ok ? fmt(total(o)) : '—';
+    if (hd) hd.textContent = ok ? fmt(total(o)) : 'بانتظار التسعير';
+  }
+
+  var SUBS = { mgr: 'اطلب المنتجات، ثم عُدّ الفاتورة الجاهزة وصحّحها واعتمدها فتُسجَّل دينًا', prep: 'جهّز الطلبات الجديدة كفواتير وعيّنها جاهزة', view: 'مراجعة الطلبات والفواتير. للتجهيز أدخل رمز المراقب.' };
+  function renderOrders(force) {
+    var r = R();
+    var ae = document.activeElement;
+    if (!force && ae && ae.tagName === 'INPUT' && root.contains(ae)) { renderDebt(); return; }
+    var resetTab = lastRole !== r;
+    lastRole = r;
+    if (resetTab) { tab = r === 'prep' ? 'new' : 'ready'; openId = (O().find(function (o) { return o.status === (tab === 'new' ? 'new' : 'ready'); }) || {}).id || null; }
+    renderPin();
+    $('odSub').textContent = SUBS[r];
+    $('odReq').hidden = r !== 'mgr';
+    if (r === 'mgr' && !draft.length) draft = [{ name: '', qty: '', note: '' }];
+    renderDebt(); renderTabs(); renderList(); renderDraft();
+  }
+  window.renderOrders = renderOrders;
+
+  root.addEventListener('input', function (e) {
+    var t = e.target;
+    if (t.dataset.d != null) { draft[+t.dataset.d][t.dataset.k] = t.value; return; }
+    if (!t.dataset.f) return;
+    var o = O().find(function (x) { return x.id === t.dataset.o; }); if (!o) return;
+    var l = o.lines.find(function (x) { return x.id === t.dataset.l; }); if (!l) return;
+    if (t.dataset.f === 'prepNote') l.prepNote = t.value; else l[t.dataset.f] = num(t.value);
+    refresh(o); renderDebt();
+  });
+
+  root.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    var d = b.dataset;
+    if (d.tab) { tab = d.tab; openId = null; renderTabs(); renderList(); return; }
+    if (d.open) { openId = openId === d.open ? null : d.open; renderList(); return; }
+    if (d.rmd != null) { draft.splice(+d.rmd, 1); renderDraft(); return; }
+    if (b.id === 'odAddLine') { draft.push({ name: '', qty: '', note: '' }); renderDraft(); return; }
+    if (b.id === 'odSend') {
+      var ls = draft.filter(function (x) { return x.name.trim() || num(x.qty); });
+      if (!ls.length || ls.some(function (x) { return !x.name.trim() || !(num(x.qty) > 0); })) { showToast('اكتب اسم كل منتج وكمية أكبر من صفر', 'error'); return; }
+      if (!requireManager()) return;
+      var no = O().reduce(function (m, o) { return Math.max(m, o.no); }, 0) + 1;
+      var o = { id: nid(), no: no, date: localTodayIso(), requester: 'المدير', status: 'new', createdAt: new Date().toISOString(), lines: ls.map(function (x) { return line(x.name.trim(), num(x.qty), x.note.trim()); }) };
+      O().push(o); draft = [{ name: '', qty: '', note: '' }]; tab = 'new'; openId = o.id; saveToLocalStorage(); renderOrders(true); showToast('أُرسل الطلب إلى المراقب'); return;
+    }
+    if (d.ready) { prepareOrder(d.ready, b); return; }
+    if (d.approve) {
+      if (!requireManager()) return;
+      var o3 = O().find(function (x) { return x.id === d.approve; });
+      if (!o3 || !readInputs(o3)) return;
+      if (o3.lines.some(function (l) { return !(eff(o3, l) >= 0) || !(l.price > 0); })) { showToast('تحقق من الكميات والأسعار', 'error'); return; }
+      o3.lines.forEach(function (l) { l.countQty = eff(o3, l); });
+      o3.corrected = o3.lines.some(function (l) { return l.countQty !== l.prepQty || l.price !== l.pricePrep; });
+      o3.status = 'approved'; o3.approvedAt = localTodayIso(); tab = 'done'; openId = o3.id;
+      saveToLocalStorage(); renderOrders(true);
+      showToast('اعتُمدت الفاتورة وسُجّل ' + fmt(total(o3)) + ' كدين'); return;
+    }
+    if (b.id === 'odPinCheck') { checkPin(); return; }
+    if (b.id === 'odPinLogout') { obsPin = null; try { sessionStorage.removeItem('obsPin'); } catch (e) {} renderOrders(true); return; }
+    if (b.id === 'odPinSave') { savePin(); return; }
+  });
+
+  /* read what is typed in the boxes into the order (the box is the truth while editing) */
+  function readInputs(o) {
+    var ok = true;
+    root.querySelectorAll('input[data-o="' + o.id + '"]').forEach(function (inp) {
+      var l = o.lines.find(function (x) { return x.id === inp.dataset.l; }); if (!l) return;
+      if (inp.dataset.f === 'prepNote') l.prepNote = inp.value; else { var v = num(inp.value); if (v == null && inp.dataset.f !== 'price') ok = false; l[inp.dataset.f] = v; }
+    });
+    if (!ok) showToast('تحقق من الكميات', 'error');
+    return ok;
+  }
+  function rpcMsg(err) {
+    var m = String((err && err.message) || '');
+    if (/locked/i.test(m)) return 'محاولات خاطئة كثيرة. انتظر 10 دقائق.';
+    if (/bad pin/i.test(m)) return 'الرمز غير صحيح.';
+    if (/not new/i.test(m)) return 'هذا الطلب لم يعد جديدًا. حدّث الصفحة.';
+    return 'تعذّر تنفيذ العملية. تحقق من الاتصال.';
+  }
+  async function prepareOrder(id, btn) {
+    var o = O().find(function (x) { return x.id === id; });
+    if (!o || !obsPin || !readInputs(o)) return;
+    o.lines.forEach(function (l) { if (l.prepQty == null) l.prepQty = l.qty; });
+    if (!priced(o)) { showToast('أدخل سعر الوحدة لكل منتج', 'error'); return; }
+    btn.disabled = true;
+    var payload = o.lines.map(function (l) { return { id: l.id, prepQty: l.prepQty, price: l.price, prepNote: l.prepNote || '' }; });
+    var res = await sb.rpc('prepare_order', { p_pin: obsPin, p_id: o.id, p_lines: payload });
+    btn.disabled = false;
+    if (res.error) { showToast(rpcMsg(res.error), 'error'); if (/bad pin/i.test(res.error.message || '')) { obsPin = null; renderOrders(true); } return; }
+    tab = 'ready'; openId = o.id;
+    await loadData();
+    renderOrders(true);
+    showToast('الفاتورة جاهزة وأُرسلت إلى المدير');
+  }
+
+  /* observer code */
+  function pinMsg(t, ok) { var el = $('odPinMsg'); if (el) { el.textContent = t; el.style.color = ok ? 'var(--accent)' : 'var(--danger)'; } }
+  async function renderPin() {
+    var obs = $('odPinObs'), mg = $('odPinMgr');
+    if (!obs || !mg) return;
+    obs.hidden = role === 'manager';
+    mg.hidden = role !== 'manager';
+    if (role !== 'manager') {
+      $('odPinForm').hidden = !!obsPin;
+      $('odPinActive').hidden = !obsPin;
+    } else {
+      try {
+        var r = await sb.rpc('observer_pin_set');
+        $('odPinState').textContent = r.data ? 'الرمز معيَّن. أدخل رمزًا جديدًا لتغييره.' : 'لم يُعيَّن رمز بعد. عيّن رمزًا ليتمكن المراقب من تجهيز الطلبات.';
+      } catch (e) {}
+    }
+  }
+  async function checkPin() {
+    var v = $('odPinInput').value;
+    if (!v) { pinMsg('اكتب الرمز.', false); return; }
+    var r = await sb.rpc('check_observer_pin', { p: v });
+    if (r.error) { pinMsg(rpcMsg(r.error), false); return; }
+    if (!r.data) { pinMsg('الرمز غير صحيح.', false); return; }
+    obsPin = v; try { sessionStorage.setItem('obsPin', v); } catch (e) {}
+    $('odPinInput').value = ''; pinMsg('', true); renderOrders(true);
+  }
+  async function savePin() {
+    if (!requireManager()) return;
+    var v = $('odPinNew').value;
+    if (v.length < 6) { pinMsg('الرمز 6 أحرف أو أرقام على الأقل.', false); return; }
+    var r = await sb.rpc('set_observer_pin', { p: v });
+    if (r.error) { pinMsg('تعذّر حفظ الرمز.', false); return; }
+    $('odPinNew').value = ''; pinMsg('', true); showToast('تم حفظ رمز المراقب'); renderPin();
+  }
+
+  /* the mouse wheel must not change a number while it is focused */
+  document.addEventListener('wheel', function (e) {
+    var t = e.target;
+    if (t && t.tagName === 'INPUT' && t.type === 'number' && document.activeElement === t) t.blur();
+  }, { passive: true });
+
+  window.renderOrders();
+})();
+
     </script>
 
 </div>
