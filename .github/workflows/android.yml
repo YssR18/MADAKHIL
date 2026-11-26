@@ -28,6 +28,7 @@ jobs:
         run: |
           npm install
           npx cap add android
+          sudo apt-get install -y imagemagick >/dev/null
           R=android/app/src/main/res
           rm -rf $R/mipmap-anydpi-v26
           for d in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
