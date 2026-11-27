@@ -300,3 +300,8 @@ end
 $$;
 revoke all on function public.prepare_order(text, text, jsonb) from public;
 grant execute on function public.prepare_order(text, text, jsonb) to anon, authenticated;
+
+-- ===== Orders trash (soft delete, purged by the app after 30 days) =====
+alter table public.orders add column if not exists deleted_at timestamptz;
+drop policy if exists orders_select_anon on public.orders;
+create policy orders_select_anon on public.orders for select to anon using (deleted_at is null);

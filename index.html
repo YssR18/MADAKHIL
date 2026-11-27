@@ -217,6 +217,16 @@ html.dark #ordersSection{--bg:#0C1311;--surface:#141E1B;--surface-2:#1C2925;--in
 #ordersSection .empty{text-align:center;color:var(--ink-2);padding:30px 10px;border:1px dashed var(--line);border-radius:16px}
 #ordersSection details.panel > summary{cursor:pointer;font-weight:800;font-size:1rem}
 #ordersSection details.panel[open] > summary{margin-bottom:10px}
+
+@media (min-width: 768px) {
+  #appRoot[data-view="orders"] main > *:not(#ordersSection):not(#toastContainer) { display: none !important; }
+  #appRoot[data-view="orders"] #ordersSection { margin-top: 0; max-width: 860px; margin-inline: auto; }
+  #appRoot[data-view="orders"] #ordersSection .od-back { display: inline-flex; }
+  /* clearer card borders and soft shadow on desktop */
+  .glass-card, #ordersSection .debt, #ordersSection .panel, #ordersSection .order { border: 1px solid #CBD5E1 !important; box-shadow: 0 1px 3px rgba(15,23,42,.10), 0 1px 2px rgba(15,23,42,.06); }
+  html.dark .glass-card, html.dark #ordersSection .debt, html.dark #ordersSection .panel, html.dark #ordersSection .order { border-color: #3B4A5E !important; box-shadow: 0 1px 3px rgba(0,0,0,.5); }
+  #ordersSection .order.attn { border-color: var(--accent) !important; }
+}
 </style>
 </head>
 <body>
@@ -246,8 +256,8 @@ html.dark #ordersSection{--bg:#0C1311;--surface:#141E1B;--surface-2:#1C2925;--in
                     <i class="fa-solid fa-user-lock text-lg"></i>
                     <span class="hidden md:inline">كلمة السر</span>
                 </button>
-                <button type="button" onclick="document.getElementById('expensesSection').scrollIntoView({behavior:'smooth'})" title="المصاريف" class="hidden md:flex p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-slate-700 transition items-center gap-2 font-bold text-xs"><i class="fa-solid fa-receipt text-lg"></i><span class="hidden lg:inline">المصاريف</span></button>
-                <button type="button" onclick="document.getElementById('ordersSection').scrollIntoView({behavior:'smooth'})" title="الطلبات" class="hidden md:flex p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700 transition items-center gap-2 font-bold text-xs"><i class="fa-solid fa-clipboard-list text-lg"></i><span class="hidden lg:inline">الطلبات</span></button>
+                <button type="button" onclick="closeOrdersView();document.getElementById('expensesSection').scrollIntoView({behavior:'smooth'})" title="المصاريف" class="hidden md:flex p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-slate-700 transition items-center gap-2 font-bold text-xs"><i class="fa-solid fa-receipt text-lg"></i><span class="hidden lg:inline">المصاريف</span></button>
+                <button type="button" onclick="openOrdersView()" title="الطلبات" class="hidden md:flex p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700 transition items-center gap-2 font-bold text-xs"><i class="fa-solid fa-clipboard-list text-lg"></i><span class="hidden lg:inline">الطلبات</span></button>
                 <button id="aboutBtn" onclick="openAbout()" title="حول التطبيق" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700 transition flex items-center gap-2 font-bold text-xs">
                     <i class="fa-solid fa-circle-info text-lg"></i>
                     <span class="hidden lg:inline">حول التطبيق</span>
@@ -641,6 +651,7 @@ html.dark #ordersSection{--bg:#0C1311;--surface:#141E1B;--surface-2:#1C2925;--in
                 </div>
             </div>
 
+            <button type="button" onclick="closeOrdersView()" class="od-back hidden items-center gap-2 font-bold text-sm text-emerald-700 dark:text-emerald-400"><i class="fa-solid fa-arrow-right"></i> رجوع إلى الرئيسية</button>
             <section class="debt mgr-only" aria-live="polite">
                 <div><div class="lbl">إجمالي الدين</div><div class="val num" id="odDebtVal">د.ج 0</div></div>
                 <div class="meta" id="odDebtMeta"></div>
@@ -1157,7 +1168,7 @@ html.dark #ordersSection{--bg:#0C1311;--surface:#141E1B;--surface-2:#1C2925;--in
             appData.entries.forEach(e => entries.set(e.id, { id: e.id, entry_date: e.date, amount: e.amount, note: e.note || '', transferred: !!e.transferred, created_at: validIso(e.createdAt) }));
             appData.weeklyBatches.forEach(x => batches.set(x.id, { id: x.id, start_date: x.startDate || null, end_date: x.endDate || null, total_amount: x.totalAmount, entries_count: x.entriesCount || 0, entry_ids: x.entryIds || [], created_at: validIso(x.createdAt) }));
             appData.expenses.forEach(x => expenses.set(x.id, { id: x.id, expense_date: x.date, amount: x.amount, category: x.category || '', note: x.note || '', created_at: validIso(x.createdAt) }));
-            appData.orders.forEach(o => orders.set(o.id, { id: o.id, no: o.no, order_date: o.date, status: o.status, requester: o.requester || '', lines: o.lines, corrected: !!o.corrected, approved_at: o.approvedAt || null, created_at: validIso(o.createdAt) }));
+            appData.orders.forEach(o => orders.set(o.id, { id: o.id, no: o.no, order_date: o.date, status: o.status, requester: o.requester || '', lines: o.lines, corrected: !!o.corrected, approved_at: o.approvedAt || null, deleted_at: o.deletedAt || null, created_at: validIso(o.createdAt) }));
             return { entries, batches, expenses, orders };
         }
         function snapshotNow() {
@@ -1184,7 +1195,7 @@ html.dark #ordersSection{--bg:#0C1311;--surface:#141E1B;--surface-2:#1C2925;--in
                 const [er, br, xr, orr] = await Promise.all([fetchAll('entries', 'entry_date'), fetchAll('batches', 'created_at'), fetchAll('expenses', 'expense_date'), fetchAll('orders', 'created_at')]);
                 appData = {
                     entries: er.map(r => ({ id: r.id, date: r.entry_date, amount: Number(r.amount), note: r.note || '', transferred: !!r.transferred, createdAt: r.created_at })),
-                    orders: orr.map(r => ({ id: r.id, no: r.no, date: r.order_date, status: r.status, requester: r.requester || '', lines: Array.isArray(r.lines) ? r.lines : [], corrected: !!r.corrected, approvedAt: r.approved_at || '', createdAt: r.created_at })),
+                    orders: orr.map(r => ({ id: r.id, no: r.no, date: r.order_date, status: r.status, requester: r.requester || '', lines: Array.isArray(r.lines) ? r.lines : [], corrected: !!r.corrected, approvedAt: r.approved_at || '', deletedAt: r.deleted_at || '', createdAt: r.created_at })),
                     expenses: xr.map(r => ({ id: r.id, date: r.expense_date, amount: Number(r.amount), category: r.category || '', note: r.note || '', createdAt: r.created_at })),
                     weeklyBatches: br.map(r => ({ id: r.id, startDate: r.start_date || '', endDate: r.end_date || '', totalAmount: Number(r.total_amount), entriesCount: r.entries_count || 0, entryIds: r.entry_ids || [], createdAt: r.created_at }))
                 };
@@ -2401,9 +2412,19 @@ html.dark #ordersSection{--bg:#0C1311;--surface:#141E1B;--surface-2:#1C2925;--in
 
 
         // ---------------- Phone layout helpers ----------------
+        function openOrdersView() {
+            const root = document.getElementById('appRoot');
+            root.dataset.view = 'orders'; window.scrollTo(0, 0);
+            if (window.renderOrders) window.renderOrders();
+        }
+        function closeOrdersView() {
+            const root = document.getElementById('appRoot');
+            if (root) delete root.dataset.view;
+        }
         function setMobileTab(name) {
             const root = document.getElementById('appRoot');
             if (!root) return;
+            if (name !== 'orders') closeOrdersView();
             if (name === 'add' && role !== 'manager') { showToast('الإضافة للمدير فقط', 'error'); return; }
             if (name === 'log') switchTab('daily');
             else if (name === 'weeks') switchTab('weekly');
@@ -2452,7 +2473,17 @@ html.dark #ordersSection{--bg:#0C1311;--surface:#141E1B;--surface-2:#1C2925;--in
   var root = document.getElementById('ordersSection');
   var tab = 'ready', openId = null, draft = [], seq = 100, lastRole = null, obsPin = null;
   try { obsPin = sessionStorage.getItem('obsPin') || null; } catch (e) {}
-  function O() { return appData.orders; }
+  function ALL() { return appData.orders; }
+  function O() { return appData.orders.filter(function (o) { return !o.deletedAt; }); }
+  var DAY = 86400000, KEEP = 30;
+  function trashed() { return ALL().filter(function (o) { return o.deletedAt; }).sort(function (a, b) { return String(b.deletedAt).localeCompare(String(a.deletedAt)); }); }
+  function daysLeft(o) { return Math.max(0, Math.ceil((new Date(o.deletedAt).getTime() + KEEP * DAY - Date.now()) / DAY)); }
+  function purgeTrash() {
+    if (role !== 'manager') return;
+    var n0 = appData.orders.length;
+    appData.orders = appData.orders.filter(function (o) { return !o.deletedAt || Date.now() - new Date(o.deletedAt).getTime() < KEEP * DAY; });
+    if (appData.orders.length !== n0) saveToLocalStorage();
+  }
 
   function R() { return role === 'manager' ? 'mgr' : (obsPin ? 'prep' : 'view'); }
   function esc2(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -2490,6 +2521,7 @@ html.dark #ordersSection{--bg:#0C1311;--surface:#141E1B;--surface-2:#1C2925;--in
   function renderTabs() {
     var cnt = function (s) { return O().filter(function (o) { return o.status === s; }).length; };
     var defs = [{ id: 'new', n: 'جديدة', c: cnt('new') }, { id: 'ready', n: 'جاهزة', c: cnt('ready') }, { id: 'done', n: 'المعتمدة', c: cnt('approved') }];
+    if (R() === 'mgr') defs.push({ id: 'trash', n: 'المحذوفات', c: trashed().length });
     $('odTabs').innerHTML = defs.map(function (t) {
       return '<button type="button" role="tab" data-tab="' + t.id + '" aria-selected="' + (tab === t.id) + '">' + t.n + '<span class="c num">' + t.c + '</span></button>';
     }).join('');
@@ -2548,11 +2580,23 @@ html.dark #ordersSection{--bg:#0C1311;--surface:#141E1B;--surface-2:#1C2925;--in
       else if (o.status === 'new') h += '<div class="note-end">بانتظار المراقب ليجهّز الطلب ويسعّره.</div>';
       else if (o.status === 'ready') h += '<div class="note-end">بانتظار عدّ المدير واعتماده.</div>';
       else h += '<div class="note-end">اعتُمدت ' + esc2(isoToDmy(o.approvedAt)) + ' وسُجّل المجموع دينًا على المدير.' + '</div>';
+      if (r === 'mgr') h += '<div class="row"><button class="btn danger" type="button" data-del="' + o.id + '">' + (o.status === 'approved' ? 'حذف الفاتورة' : 'حذف الطلب') + '</button></div>';
       h += '</div>';
     }
     return h + '</article>';
   }
+  function trashHtml(o) {
+    return '<article class="order"><div class="ohead" style="cursor:default"><span><span class="no">ف-' + pad(o.no) + '</span>' + statusPill(o) + '</span>' +
+      '<span class="tot num">' + fmt(total(o)) + '</span>' +
+      '<span class="sub">' + esc2(isoToDmy(o.date)) + ' · ' + o.lines.length + ' منتجات · تُحذف نهائيًا بعد <span class="num">' + daysLeft(o) + '</span> يومًا</span><span></span></div>' +
+      '<div class="obody"><div class="row"><button class="btn" type="button" data-restore="' + o.id + '">استرجاع</button><button class="btn danger" type="button" data-purge="' + o.id + '">حذف نهائي</button></div></div></article>';
+  }
   function renderList() {
+    if (tab === 'trash') {
+      var tr = R() === 'mgr' ? trashed() : [];
+      $('odList').innerHTML = (tr.length ? '<p class="note-end">العناصر المحذوفة تبقى هنا 30 يومًا ثم تُحذف نهائيًا تلقائيًا.</p>' + tr.map(trashHtml).join('') : '<div class="empty">سلة المحذوفات فارغة.</div>');
+      return;
+    }
     var st = tab === 'done' ? 'approved' : tab;
     var rows = O().filter(function (o) { return o.status === st; }).sort(function (a, b) { return b.no - a.no; });
     $('odList').innerHTML = rows.length ? rows.map(orderHtml).join('') :
@@ -2577,11 +2621,13 @@ html.dark #ordersSection{--bg:#0C1311;--surface:#141E1B;--surface-2:#1C2925;--in
 
   var SUBS = { mgr: 'اطلب المنتجات، ثم عُدّ الفاتورة الجاهزة وصحّحها واعتمدها فتُسجَّل دينًا', prep: 'جهّز الطلبات الجديدة كفواتير وعيّنها جاهزة', view: 'مراجعة الطلبات والفواتير. للتجهيز أدخل رمز المراقب.' };
   function renderOrders(force) {
+    purgeTrash();
     var r = R();
     var ae = document.activeElement;
     if (!force && ae && ae.tagName === 'INPUT' && root.contains(ae)) { renderDebt(); return; }
     var resetTab = lastRole !== r;
     lastRole = r;
+    if (tab === 'trash' && r !== 'mgr') tab = 'ready';
     if (resetTab) { tab = r === 'prep' ? 'new' : 'ready'; openId = (O().find(function (o) { return o.status === (tab === 'new' ? 'new' : 'ready'); }) || {}).id || null; }
     renderPin();
     $('odSub').textContent = SUBS[r];
@@ -2617,6 +2663,22 @@ html.dark #ordersSection{--bg:#0C1311;--surface:#141E1B;--surface-2:#1C2925;--in
       O().push(o); draft = [{ name: '', qty: '', note: '' }]; tab = 'new'; openId = o.id; saveToLocalStorage(); renderOrders(true); showToast('أُرسل الطلب إلى المراقب'); return;
     }
     if (d.ready) { prepareOrder(d.ready, b); return; }
+    if (d.del) {
+      if (!requireManager()) return;
+      var od = ALL().find(function (x) { return x.id === d.del; }); if (!od) return;
+      if (!confirm(od.status === 'approved' ? 'حذف هذه الفاتورة سينقصها من الدين. نقلها إلى سلة المحذوفات؟' : 'نقل هذا الطلب إلى سلة المحذوفات؟')) return;
+      od.deletedAt = new Date().toISOString(); openId = null; saveToLocalStorage(); renderOrders(true); showToast('نُقل إلى المحذوفات (يُحذف نهائيًا بعد 30 يومًا)'); return;
+    }
+    if (d.restore) {
+      if (!requireManager()) return;
+      var or2 = ALL().find(function (x) { return x.id === d.restore; }); if (!or2) return;
+      or2.deletedAt = ''; saveToLocalStorage(); renderOrders(true); showToast('تم الاسترجاع'); return;
+    }
+    if (d.purge) {
+      if (!requireManager()) return;
+      if (!confirm('حذف نهائي لا يمكن التراجع عنه. متابعة؟')) return;
+      appData.orders = appData.orders.filter(function (x) { return x.id !== d.purge; }); saveToLocalStorage(); renderOrders(true); return;
+    }
     if (d.approve) {
       if (!requireManager()) return;
       var o3 = O().find(function (x) { return x.id === d.approve; });
